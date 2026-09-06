@@ -1,23 +1,23 @@
 const express = require("express");
 const cors = require("cors");
-const mongoose = require("mongoose");
 require("dotenv").config();
+
+const connectDB = require("./config/db");
+
+// Router
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
+// Connect to MongoDB
+connectDB();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB connected successfully ✅");
-  })
-  .catch((error) => {
-    console.error("MongoDB connection failed ❌");
-    console.error(error.message);
-  });
+// Routes
+app.use("/api/auth", authRoutes);
 
 // Test route
 app.get("/", (req, res) => {
