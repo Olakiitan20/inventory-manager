@@ -8,6 +8,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const productRoutes = require("./routes/productRoutes");
+const stockMovementRoutes = require("./routes/stockMovementRoutes");
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/stock", stockMovementRoutes);
 
 // Test route
 app.get("/", (req, res) => {
