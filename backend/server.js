@@ -7,6 +7,7 @@ const connectDB = require("./config/db");
 // Router
 const authRoutes = require("./routes/authRoutes");
 const customerRoutes = require("./routes/customerRoutes");
+const productRoutes = require("./routes/productRoutes");
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/customers", customerRoutes);
+app.use("/api/products", productRoutes);
 
 // Test route
 app.get("/", (req, res) => {
