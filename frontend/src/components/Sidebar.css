@@ -1,0 +1,317 @@
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+  width: 240px;
+  height: 100vh;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  padding: 24px 14px;
+
+  box-sizing: border-box;
+
+  background: #111827;
+  color: #ffffff;
+
+  z-index: 9999;
+}
+
+/* =========================
+   SIDEBAR TOP
+========================= */
+
+.sidebar-top {
+  width: 100%;
+}
+
+/* =========================
+   BRAND
+========================= */
+
+.sidebar-brand {
+  padding: 8px 12px 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-logo {
+  display: block;
+
+  color: #ffffff;
+
+  font-size: 20px;
+  font-weight: 700;
+
+  letter-spacing: -0.3px;
+
+  text-decoration: none;
+
+  cursor: pointer;
+}
+
+.sidebar-logo:hover {
+  color: #ffffff;
+}
+
+/* =========================
+   MOBILE TOGGLE
+========================= */
+
+.sidebar-toggle {
+  display: none;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #1f2937;
+
+  color: #ffffff;
+
+  font-size: 21px;
+
+  cursor: pointer;
+}
+
+.sidebar-toggle:hover {
+  background: #374151;
+}
+
+/* =========================
+   NAVIGATION
+========================= */
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.sidebar-nav a {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  box-sizing: border-box;
+
+  padding: 13px 14px;
+
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #9ca3af;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.sidebar-nav a:hover {
+  background: #1f2937;
+
+  color: #ffffff;
+
+  transform: translateX(2px);
+}
+
+/* =========================
+   NAV ICONS
+========================= */
+
+.nav-icon {
+  width: 20px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 16px;
+
+  flex-shrink: 0;
+}
+
+/* =========================
+   ACTIVE NAVIGATION
+========================= */
+
+.sidebar-nav a.active {
+  background: #2563eb;
+
+  color: #ffffff;
+
+  font-weight: 600;
+}
+
+.sidebar-nav a.active:hover {
+  background: #1d4ed8;
+
+  transform: none;
+}
+
+/* =========================
+   LOGOUT
+========================= */
+
+.sidebar-logout {
+  padding-top: 20px;
+
+  border-top: 1px solid #1f2937;
+}
+
+.sidebar-logout button {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 13px 14px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #fca5a5;
+
+  text-align: left;
+
+  font-family: inherit;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.sidebar-logout button:hover {
+  background: #7f1d1d;
+
+  color: #ffffff;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+  .sidebar {
+    position: relative;
+
+    width: 100%;
+    height: auto;
+
+    padding: 12px 16px;
+
+    z-index: 9999;
+  }
+
+  /* Brand */
+
+  .sidebar-brand {
+    padding: 4px 0;
+  }
+
+  .sidebar-logo {
+    font-size: 18px;
+  }
+
+  /* Toggle */
+
+  .sidebar-toggle {
+    display: flex;
+  }
+
+  /* Hide navigation initially */
+
+  .sidebar-nav,
+  .sidebar-logout {
+    display: none;
+  }
+
+  /* Show navigation when menu opens */
+
+  .sidebar.sidebar-open .sidebar-nav {
+    display: flex;
+
+    margin-top: 14px;
+
+    gap: 5px;
+
+    animation: menuSlideDown 0.2s ease;
+  }
+
+  .sidebar.sidebar-open .sidebar-logout {
+    display: block;
+
+    margin-top: 10px;
+  }
+
+  /* Mobile navigation */
+
+  .sidebar-nav a {
+    padding: 12px 14px;
+  }
+
+  .sidebar-nav a:hover {
+    transform: none;
+  }
+
+}
+
+/* =========================
+   MOBILE ANIMATION
+========================= */
+
+@keyframes menuSlideDown {
+
+  from {
+    opacity: 0;
+
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: translateY(0);
+  }
+
+}
