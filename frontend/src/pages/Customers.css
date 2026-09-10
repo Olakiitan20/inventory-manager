@@ -9,42 +9,39 @@
   min-height: 100vh;
 }
 
-/* Header */
+/* =========================
+   HEADER
+========================= */
 
 .customers-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   margin-bottom: 28px;
 }
 
 .customers-header h1 {
   margin: 0;
-
   color: #111827;
-
   font-size: 30px;
   font-weight: 700;
 }
 
 .customers-header p {
   margin: 8px 0 0;
-
   color: #6b7280;
-
   font-size: 14px;
 }
 
-/* Add Customer */
+/* =========================
+   ADD BUTTON
+========================= */
 
 .add-customer-button {
   border: none;
-
   border-radius: 8px;
 
   background: #2563eb;
-
   color: #ffffff;
 
   padding: 11px 16px;
@@ -61,13 +58,14 @@
   background: #1d4ed8;
 }
 
-/* Customers Card */
+/* =========================
+   CUSTOMERS CARD
+========================= */
 
 .customers-card {
   background: #ffffff;
 
   border: 1px solid #e5e7eb;
-
   border-radius: 14px;
 
   padding: 20px;
@@ -75,19 +73,18 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
-/* Table */
+/* =========================
+   TABLE
+========================= */
 
 .customers-table-wrapper {
   width: 100%;
-
   overflow-x: auto;
 }
 
 .customers-table {
   width: 100%;
-
   border-collapse: collapse;
-
   min-width: 700px;
 }
 
@@ -97,7 +94,6 @@
   text-align: left;
 
   color: #6b7280;
-
   background: #f9fafb;
 
   font-size: 12px;
@@ -124,7 +120,9 @@
   background: #f9fafb;
 }
 
-/* Customer Type */
+/* =========================
+   CUSTOMER TYPE
+========================= */
 
 .customer-type {
   display: inline-block;
@@ -143,7 +141,9 @@
   text-transform: capitalize;
 }
 
-/* Empty */
+/* =========================
+   EMPTY / ERROR
+========================= */
 
 .empty-message {
   color: #9ca3af;
@@ -155,7 +155,277 @@
   text-align: center;
 }
 
-/* Mobile */
+.customer-error {
+  color: #dc2626;
+
+  font-size: 13px;
+
+  padding: 30px 0;
+
+  text-align: center;
+}
+
+/* =========================
+   MODAL OVERLAY
+========================= */
+
+.customer-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(17, 24, 39, 0.55);
+
+  z-index: 10000;
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.customer-modal {
+  width: 100%;
+  max-width: 600px;
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  background: #ffffff;
+
+  border-radius: 16px;
+
+  padding: 26px;
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.2);
+
+  animation: modalAppear 0.2s ease;
+}
+
+/* =========================
+   MODAL HEADER
+========================= */
+
+.customer-modal-header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-start;
+
+  margin-bottom: 24px;
+}
+
+.customer-modal-header h2 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 21px;
+}
+
+.customer-modal-header p {
+  margin: 6px 0 0;
+
+  color: #6b7280;
+
+  font-size: 13px;
+}
+
+.customer-modal-close {
+  width: 34px;
+  height: 34px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: #f3f4f6;
+
+  color: #6b7280;
+
+  font-size: 24px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.customer-modal-close:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+/* =========================
+   FORM
+========================= */
+
+.customer-form {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 18px;
+}
+
+.customer-form-row {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 16px;
+}
+
+.customer-form-group {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.customer-form-group label {
+  color: #374151;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.customer-form-group input,
+.customer-form-group select,
+.customer-form-group textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 8px;
+
+  padding: 11px 12px;
+
+  background: #ffffff;
+
+  color: #111827;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.customer-form-group textarea {
+  resize: vertical;
+
+  min-height: 80px;
+}
+
+.customer-form-group input::placeholder,
+.customer-form-group textarea::placeholder {
+  color: #9ca3af;
+}
+
+.customer-form-group input:focus,
+.customer-form-group select:focus,
+.customer-form-group textarea:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* =========================
+   MODAL ACTIONS
+========================= */
+
+.customer-modal-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  margin-top: 6px;
+
+  padding-top: 18px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.customer-cancel-button,
+.customer-save-button {
+  border: none;
+
+  border-radius: 8px;
+
+  padding: 11px 16px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.customer-cancel-button {
+  background: #f3f4f6;
+
+  color: #374151;
+}
+
+.customer-cancel-button:hover {
+  background: #e5e7eb;
+}
+
+.customer-save-button {
+  background: #2563eb;
+
+  color: #ffffff;
+}
+
+.customer-save-button:hover {
+  background: #1d4ed8;
+}
+
+/* =========================
+   ANIMATION
+========================= */
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* =========================
+   MOBILE
+========================= */
 
 @media (max-width: 600px) {
   .customers-content {
@@ -189,4 +459,60 @@
   .customers-card {
     padding: 12px;
   }
+
+  .customer-modal {
+    padding: 20px;
+
+    max-height: 92vh;
+  }
+
+  .customer-form-row {
+    grid-template-columns: 1fr;
+
+    gap: 18px;
+  }
+
+  .customer-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .customer-cancel-button,
+  .customer-save-button {
+    width: 100%;
+  }
+}
+
+/* =========================
+   CUSTOMER ALERTS
+========================= */
+
+.customer-alert {
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.customer-alert-success {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.customer-alert-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+/* =========================
+   DISABLED BUTTON
+========================= */
+
+.customer-save-button:disabled,
+.customer-cancel-button:disabled,
+.customer-modal-close:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

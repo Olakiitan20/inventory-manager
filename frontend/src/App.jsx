@@ -9,6 +9,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
+import Products from "./pages/Products";
+import Inventory from "./pages/Inventory";
 
 function App() {
   const isLoggedIn = Boolean(localStorage.getItem("token"));
@@ -68,6 +70,30 @@ function App() {
           element={
             isLoggedIn ? (
               <Customers />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        {/* PRODUCTS */}
+        <Route
+          path="/products"
+          element={
+            isLoggedIn ? (
+              <Products />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        {/* INVENTORY */}
+        <Route
+          path="/inventory"
+          element={
+            isLoggedIn ? (
+              <Inventory />
             ) : (
               <Navigate to="/login" replace />
             )
