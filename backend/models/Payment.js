@@ -28,7 +28,7 @@ const paymentSchema = new mongoose.Schema(
 
     paymentChannel: {
       type: String,
-      enum: ["opay", "moniepoint", "palmpay", "other"],
+      enum: ["opay", "moniepoint", "palmpay", "bank", "other"],
       trim: true,
     },
 

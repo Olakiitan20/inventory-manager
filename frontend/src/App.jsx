@@ -11,6 +11,8 @@ import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
 import Products from "./pages/Products";
 import Inventory from "./pages/Inventory";
+import Invoices from "./pages/Invoices";
+import Payments from "./pages/Payments";
 
 function App() {
   const isLoggedIn = Boolean(localStorage.getItem("token"));
@@ -99,6 +101,31 @@ function App() {
             )
           }
         />
+
+        {/* INVOICE */}
+        <Route
+          path="/invoices"
+          element={
+            isLoggedIn ? (
+              <Invoices />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        {/* PAYMENTS */}
+
+        <Route
+          path="/payments"
+          element={
+            isLoggedIn ?(
+              <Payments />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />  
 
         {/* DEFAULT */}
         <Route
