@@ -5,12 +5,51 @@ const StockMovement = require("../models/StockMovement");
 
 const createInvoice = async (req, res) => {
   try {
-    const { customerId, items, amountPaid = 0 } = req.body;
+    const {
+      customerId,
+      items,
+      amountPaid = 0,
+      paymentMethod,
+      paymentChannel,
+    } = req.body;
 
     if (!customerId || !items || items.length === 0) {
       return res.status(400).json({
         success: false,
         message: "Customer and at least one product are required",
+      });
+    }
+
+    if (!paymentMethod) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment method is required",
+      });
+    }
+
+    if (!["cash", "transfer", "card"].includes(paymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment method",
+      });
+    }
+
+    if (paymentMethod === "transfer" && !paymentChannel) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment channel is required for transfer payments",
+      });
+    }
+
+    if (
+      paymentChannel &&
+      !["opay", "moniepoint", "palmpay", "bank", "other"].includes(
+        paymentChannel
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment channel",
       });
     }
 
@@ -96,7 +135,10 @@ const createInvoice = async (req, res) => {
 
     const invoiceCount = await Invoice.countDocuments();
 
-    const invoiceNumber = `INV-${String(invoiceCount + 1).padStart(4, "0")}`;
+    const invoiceNumber = `INV-${String(invoiceCount + 1).padStart(
+      4,
+      "0"
+    )}`;
 
     const invoice = await Invoice.create({
       invoiceNumber,
@@ -107,6 +149,9 @@ const createInvoice = async (req, res) => {
       amountPaid,
       balance,
       status,
+      paymentMethod,
+      paymentChannel:
+        paymentMethod === "transfer" ? paymentChannel : undefined,
       createdBy: req.user.userId,
     });
 
@@ -141,7 +186,7 @@ const createInvoice = async (req, res) => {
   }
 };
 
-// GET INVOICE
+// GET INVOICES
 
 const getInvoices = async (req, res) => {
   try {

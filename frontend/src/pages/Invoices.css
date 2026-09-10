@@ -179,7 +179,9 @@
   font-size: 13px;
 }
 
-/* Modal */
+/* ================================
+   MODAL
+================================ */
 
 .invoice-modal-overlay {
   position: fixed;
@@ -242,7 +244,9 @@
   color: #111827;
 }
 
-/* Form */
+/* ================================
+   FORM
+================================ */
 
 .invoice-form {
   display: flex;
@@ -287,7 +291,9 @@
   font-size: 11px;
 }
 
-/* Search */
+/* ================================
+   SEARCH
+================================ */
 
 .invoice-search-container {
   position: relative;
@@ -409,7 +415,9 @@
   text-align: center;
 }
 
-/* Selected customer */
+/* ================================
+   SELECTED CUSTOMER
+================================ */
 
 .selected-customer {
   display: flex;
@@ -477,7 +485,9 @@
   text-decoration: underline;
 }
 
-/* Invoice items */
+/* ================================
+   INVOICE ITEMS
+================================ */
 
 .invoice-items {
   display: flex;
@@ -596,7 +606,9 @@
   background: #fee2e2;
 }
 
-/* Payment */
+/* ================================
+   PAYMENT
+================================ */
 
 .invoice-payment-input {
   display: flex;
@@ -604,11 +616,67 @@
   gap: 7px;
 }
 
-.invoice-payment-input label {
+.invoice-payment-input label,
+.invoice-payment-field label {
+  display: block;
+  margin-bottom: 7px;
   color: #374151;
   font-size: 12px;
   font-weight: 600;
 }
+
+/* Payment method + transfer channel */
+
+.invoice-payment-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.invoice-payment-field {
+  min-width: 0;
+}
+
+.invoice-payment-field select {
+  width: 100%;
+  height: 44px;
+  padding: 0 38px 0 13px;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  background-color: #ffffff;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  appearance: auto;
+}
+
+.invoice-payment-field select:hover {
+  border-color: #9ca3af;
+}
+
+.invoice-payment-field select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.invoice-payment-field select option {
+  color: #111827;
+  background: #ffffff;
+  font-size: 13px;
+}
+
+/* Transfer channel animation/spacing */
+
+.invoice-payment-field {
+  animation: paymentFieldAppear 0.18s ease;
+}
+
+/* Currency input */
 
 .currency-input {
   position: relative;
@@ -622,6 +690,7 @@
   color: #6b7280;
   font-size: 13px;
   font-weight: 600;
+  pointer-events: none;
 }
 
 .currency-input input {
@@ -630,9 +699,11 @@
   padding: 0 14px 0 32px;
   border: 1px solid #d1d5db;
   border-radius: 9px;
+  background: #ffffff;
   color: #111827;
   font-size: 13px;
   outline: none;
+  transition: all 0.2s ease;
 }
 
 .currency-input input:focus {
@@ -640,7 +711,9 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-/* Summary */
+/* ================================
+   SUMMARY
+================================ */
 
 .invoice-summary {
   margin: 0 26px;
@@ -711,7 +784,9 @@
   color: #dc2626;
 }
 
-/* Actions */
+/* ================================
+   ACTIONS
+================================ */
 
 .invoice-form-actions {
   display: flex;
@@ -757,7 +832,9 @@
   cursor: not-allowed;
 }
 
-/* Animation */
+/* ================================
+   ANIMATION
+================================ */
 
 @keyframes invoiceModalAppear {
   from {
@@ -771,7 +848,21 @@
   }
 }
 
-/* Mobile */
+@keyframes paymentFieldAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================================
+   MOBILE
+================================ */
 
 @media (max-width: 700px) {
   .invoices-content {
@@ -816,6 +907,18 @@
 
   .invoice-summary {
     margin: 0 20px;
+  }
+
+  /* Payment fields stack neatly on mobile */
+
+  .invoice-payment-fields {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-top: 16px;
+  }
+
+  .invoice-payment-field select {
+    height: 44px;
   }
 
   .invoice-form-actions {

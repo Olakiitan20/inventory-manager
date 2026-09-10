@@ -85,6 +85,24 @@ const invoiceSchema = new mongoose.Schema(
       default: "unpaid",
     },
 
+    paymentMethod: {
+      type: String,
+      enum: ["cash", "transfer", "card"],
+      required: true,
+    },
+
+    paymentChannel: {
+      type: String,
+      enum: [
+        "opay",
+        "moniepoint",
+        "palmpay",
+        "bank",
+        "other",
+      ],
+      trim: true,
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

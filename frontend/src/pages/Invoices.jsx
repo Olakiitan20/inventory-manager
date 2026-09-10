@@ -25,6 +25,9 @@ const Invoices = () => {
 
   const [amountPaid, setAmountPaid] = useState("");
 
+  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [paymentChannel, setPaymentChannel] = useState("");
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     window.location.href = "/login";
@@ -124,6 +127,8 @@ const Invoices = () => {
     setSelectedCustomer(null);
     setItems([]);
     setAmountPaid("");
+    setPaymentMethod("cash");
+    setPaymentChannel("");
     setError("");
     setSuccess("");
   };
@@ -257,6 +262,16 @@ const Invoices = () => {
     return "unpaid";
   };
 
+  const handlePaymentMethodChange = (e) => {
+    const method = e.target.value;
+
+    setPaymentMethod(method);
+
+    if (method !== "transfer") {
+      setPaymentChannel("");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -279,6 +294,14 @@ const Invoices = () => {
       setError(
         "Amount paid cannot be greater than the invoice total."
       );
+      return;
+    }
+
+    if (
+      paymentMethod === "transfer" &&
+      !paymentChannel
+    ) {
+      setError("Please select a transfer channel.");
       return;
     }
 
@@ -309,6 +332,11 @@ const Invoices = () => {
             quantity: Number(item.quantity),
           })),
           amountPaid: paid,
+          paymentMethod,
+          paymentChannel:
+            paymentMethod === "transfer"
+              ? paymentChannel
+              : undefined,
         }),
       });
 
@@ -779,8 +807,7 @@ const Invoices = () => {
                   <div>
                     <h3>Payment</h3>
                     <p>
-                      Enter the amount paid by the
-                      customer.
+                      Enter the amount paid and payment method.
                     </p>
                   </div>
                 </div>
@@ -798,6 +825,7 @@ const Invoices = () => {
                       type="number"
                       min="0"
                       max={subtotal}
+                      step="1"
                       value={amountPaid}
                       onChange={(e) =>
                         setAmountPaid(e.target.value)
@@ -805,6 +833,71 @@ const Invoices = () => {
                       placeholder="0"
                     />
                   </div>
+                </div>
+
+                <div className="invoice-payment-fields">
+                  <div className="invoice-payment-field">
+                    <label htmlFor="payment-method">
+                      Payment Method
+                    </label>
+
+                    <select
+                      id="payment-method"
+                      value={paymentMethod}
+                      onChange={
+                        handlePaymentMethodChange
+                      }
+                    >
+                      <option value="cash">Cash</option>
+                      <option value="transfer">
+                        Transfer
+                      </option>
+                      <option value="card">Card</option>
+                    </select>
+                  </div>
+
+                  {paymentMethod === "transfer" && (
+                    <div className="invoice-payment-field">
+                      <label htmlFor="payment-channel">
+                        Transfer Channel
+                      </label>
+
+                      <select
+                        id="payment-channel"
+                        value={paymentChannel}
+                        onChange={(e) =>
+                          setPaymentChannel(
+                            e.target.value
+                          )
+                        }
+                        required
+                      >
+                        <option value="">
+                          Select transfer channel
+                        </option>
+
+                        <option value="opay">
+                          Opay
+                        </option>
+
+                        <option value="moniepoint">
+                          Moniepoint
+                        </option>
+
+                        <option value="palmpay">
+                          PalmPay
+                        </option>
+
+                        <option value="bank">
+                          Bank
+                        </option>
+
+                        <option value="other">
+                          Other
+                        </option>
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
 
