@@ -15,6 +15,7 @@ const Invoices = () => {
   const [success, setSuccess] = useState("");
 
   const [showModal, setShowModal] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
 
   const [customerSearch, setCustomerSearch] = useState("");
   const [productSearch, setProductSearch] = useState("");
@@ -46,9 +47,7 @@ const Invoices = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to fetch invoices"
-        );
+        throw new Error(data.message || "Failed to fetch invoices");
       }
 
       setInvoices(data.invoices || []);
@@ -69,9 +68,7 @@ const Invoices = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to fetch customers"
-        );
+        throw new Error(data.message || "Failed to fetch customers");
       }
 
       setCustomers(data.customers || []);
@@ -92,9 +89,7 @@ const Invoices = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to fetch products"
-        );
+        throw new Error(data.message || "Failed to fetch products");
       }
 
       setProducts(data.products || []);
@@ -147,6 +142,18 @@ const Invoices = () => {
     setShowModal(true);
   };
 
+  const openInvoiceDetails = (invoice) => {
+    setSelectedInvoice(invoice);
+  };
+
+  const closeInvoiceDetails = () => {
+    setSelectedInvoice(null);
+  };
+
+  const handlePrintInvoice = () => {
+    window.print();
+  };
+
   const customerResults = customers
     .filter((customer) => {
       const search = customerSearch.trim().toLowerCase();
@@ -176,13 +183,9 @@ const Invoices = () => {
       }
 
       const name = product.name?.toLowerCase() || "";
-      const category =
-        product.category?.toLowerCase() || "";
+      const category = product.category?.toLowerCase() || "";
 
-      return (
-        name.includes(search) ||
-        category.includes(search)
-      );
+      return name.includes(search) || category.includes(search);
     })
     .filter(
       (product) =>
@@ -222,10 +225,7 @@ const Invoices = () => {
         item.productId === productId
           ? {
               ...item,
-              quantity: Math.max(
-                1,
-                Number(quantity) || 1
-              ),
+              quantity: Math.max(1, Number(quantity) || 1),
             }
           : item
       )
@@ -234,16 +234,13 @@ const Invoices = () => {
 
   const removeProduct = (productId) => {
     setItems((previous) =>
-      previous.filter(
-        (item) => item.productId !== productId
-      )
+      previous.filter((item) => item.productId !== productId)
     );
   };
 
   const subtotal = items.reduce(
     (total, item) =>
-      total +
-      item.sellingPrice * Number(item.quantity),
+      total + item.sellingPrice * Number(item.quantity),
     0
   );
 
@@ -297,10 +294,7 @@ const Invoices = () => {
       return;
     }
 
-    if (
-      paymentMethod === "transfer" &&
-      !paymentChannel
-    ) {
+    if (paymentMethod === "transfer" && !paymentChannel) {
       setError("Please select a transfer channel.");
       return;
     }
@@ -362,11 +356,7 @@ const Invoices = () => {
         resetForm();
       }, 1000);
     } catch (error) {
-      console.error(
-        "Create invoice error:",
-        error.message
-      );
-
+      console.error("Create invoice error:", error.message);
       setError(error.message);
     } finally {
       setSaving(false);
@@ -381,9 +371,7 @@ const Invoices = () => {
         <div className="invoices-header">
           <div>
             <h1>Invoices</h1>
-            <p>
-              Create and manage customer invoices.
-            </p>
+            <p>Create and manage customer invoices.</p>
           </div>
 
           <button
@@ -440,6 +428,7 @@ const Invoices = () => {
                     <th>Balance</th>
                     <th>Status</th>
                     <th>Date</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
 
@@ -488,10 +477,7 @@ const Invoices = () => {
                           }`}
                         >
                           {invoice.status
-                            ? invoice.status.replace(
-                                "_",
-                                " "
-                              )
+                            ? invoice.status.replace("_", " ")
                             : "unpaid"}
                         </span>
                       </td>
@@ -503,6 +489,18 @@ const Invoices = () => {
                             ).toLocaleDateString()
                           : "—"}
                       </td>
+
+                      <td>
+                        <button
+                          type="button"
+                          className="view-invoice-button"
+                          onClick={() =>
+                            openInvoiceDetails(invoice)
+                          }
+                        >
+                          View Invoice
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -511,6 +509,8 @@ const Invoices = () => {
           )}
         </div>
       </main>
+
+      {/* CREATE INVOICE MODAL */}
 
       {showModal && (
         <div
@@ -525,8 +525,7 @@ const Invoices = () => {
               <div>
                 <h2>Create Invoice</h2>
                 <p>
-                  Add a customer, products and payment
-                  details.
+                  Add a customer, products and payment details.
                 </p>
               </div>
 
@@ -559,9 +558,13 @@ const Invoices = () => {
               <div className="invoice-form-section">
                 <div className="invoice-section-title">
                   <span>01</span>
+
                   <div>
                     <h3>Customer</h3>
-                    <p>Select the customer for this invoice.</p>
+
+                    <p>
+                      Select the customer for this invoice.
+                    </p>
                   </div>
                 </div>
 
@@ -574,9 +577,7 @@ const Invoices = () => {
                         type="text"
                         value={customerSearch}
                         onChange={(e) =>
-                          setCustomerSearch(
-                            e.target.value
-                          )
+                          setCustomerSearch(e.target.value)
                         }
                         placeholder="Search customer by name, phone or email..."
                         autoComplete="off"
@@ -590,37 +591,33 @@ const Invoices = () => {
                             No matching customers found.
                           </div>
                         ) : (
-                          customerResults.map(
-                            (customer) => (
-                              <button
-                                type="button"
-                                key={customer._id}
-                                className="invoice-search-result"
-                                onClick={() =>
-                                  selectCustomer(
-                                    customer
-                                  )
-                                }
-                              >
-                                <div>
-                                  <strong>
-                                    {customer.name}
-                                  </strong>
+                          customerResults.map((customer) => (
+                            <button
+                              type="button"
+                              key={customer._id}
+                              className="invoice-search-result"
+                              onClick={() =>
+                                selectCustomer(customer)
+                              }
+                            >
+                              <div>
+                                <strong>
+                                  {customer.name}
+                                </strong>
 
-                                  <span>
-                                    {customer.phone ||
-                                      customer.email ||
-                                      "No contact"}
-                                  </span>
-                                </div>
+                                <span>
+                                  {customer.phone ||
+                                    customer.email ||
+                                    "No contact"}
+                                </span>
+                              </div>
 
-                                <small>
-                                  {customer.customerType ||
-                                    "Customer"}
-                                </small>
-                              </button>
-                            )
-                          )
+                              <small>
+                                {customer.customerType ||
+                                  "Customer"}
+                              </small>
+                            </button>
+                          ))
                         )}
                       </div>
                     )}
@@ -660,11 +657,12 @@ const Invoices = () => {
               <div className="invoice-form-section">
                 <div className="invoice-section-title">
                   <span>02</span>
+
                   <div>
                     <h3>Products</h3>
+
                     <p>
-                      Add one or more products to the
-                      invoice.
+                      Add one or more products to the invoice.
                     </p>
                   </div>
                 </div>
@@ -748,9 +746,8 @@ const Invoices = () => {
 
                         <div className="invoice-item-stock">
                           <small>Available</small>
-                          <span>
-                            {item.stockQuantity}
-                          </span>
+
+                          <span>{item.stockQuantity}</span>
                         </div>
 
                         <div className="invoice-item-quantity">
@@ -786,9 +783,7 @@ const Invoices = () => {
                           type="button"
                           className="remove-invoice-item"
                           onClick={() =>
-                            removeProduct(
-                              item.productId
-                            )
+                            removeProduct(item.productId)
                           }
                           disabled={saving}
                           aria-label={`Remove ${item.name}`}
@@ -804,8 +799,10 @@ const Invoices = () => {
               <div className="invoice-form-section">
                 <div className="invoice-section-title">
                   <span>03</span>
+
                   <div>
                     <h3>Payment</h3>
+
                     <p>
                       Enter the amount paid and payment method.
                     </p>
@@ -844,14 +841,14 @@ const Invoices = () => {
                     <select
                       id="payment-method"
                       value={paymentMethod}
-                      onChange={
-                        handlePaymentMethodChange
-                      }
+                      onChange={handlePaymentMethodChange}
                     >
                       <option value="cash">Cash</option>
+
                       <option value="transfer">
                         Transfer
                       </option>
+
                       <option value="card">Card</option>
                     </select>
                   </div>
@@ -866,9 +863,7 @@ const Invoices = () => {
                         id="payment-channel"
                         value={paymentChannel}
                         onChange={(e) =>
-                          setPaymentChannel(
-                            e.target.value
-                          )
+                          setPaymentChannel(e.target.value)
                         }
                         required
                       >
@@ -876,9 +871,7 @@ const Invoices = () => {
                           Select transfer channel
                         </option>
 
-                        <option value="opay">
-                          Opay
-                        </option>
+                        <option value="opay">Opay</option>
 
                         <option value="moniepoint">
                           Moniepoint
@@ -888,13 +881,9 @@ const Invoices = () => {
                           PalmPay
                         </option>
 
-                        <option value="bank">
-                          Bank
-                        </option>
+                        <option value="bank">Bank</option>
 
-                        <option value="other">
-                          Other
-                        </option>
+                        <option value="other">Other</option>
                       </select>
                     </div>
                   )}
@@ -960,6 +949,267 @@ const Invoices = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* INVOICE DETAILS MODAL */}
+
+      {selectedInvoice && (
+        <div
+          className="invoice-modal-overlay invoice-details-overlay"
+          onClick={closeInvoiceDetails}
+        >
+          <div
+            className="invoice-details-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="invoice-details-header no-print">
+              <div>
+                <h2>Invoice Details</h2>
+
+                <p>
+                  {selectedInvoice.invoiceNumber || "Invoice"}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="invoice-modal-close"
+                onClick={closeInvoiceDetails}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="invoice-details-body">
+              <div className="invoice-business-heading">
+                <div>
+                  <h1>Inventory Manager</h1>
+
+                  <p>
+                    Sales & Inventory Management System
+                  </p>
+                </div>
+
+                <div className="invoice-details-number">
+                  <span>Invoice</span>
+
+                  <strong>
+                    {selectedInvoice.invoiceNumber || "—"}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="invoice-details-info-grid">
+                <div className="invoice-details-info-box">
+                  <span>Customer</span>
+
+                  <strong>
+                    {selectedInvoice.customer?.name ||
+                      "Unknown customer"}
+                  </strong>
+
+                  {selectedInvoice.customer?.phone && (
+                    <small>
+                      {selectedInvoice.customer.phone}
+                    </small>
+                  )}
+
+                  {selectedInvoice.customer?.email && (
+                    <small>
+                      {selectedInvoice.customer.email}
+                    </small>
+                  )}
+                </div>
+
+                <div className="invoice-details-info-box">
+                  <span>Invoice Date</span>
+
+                  <strong>
+                    {selectedInvoice.createdAt
+                      ? new Date(
+                          selectedInvoice.createdAt
+                        ).toLocaleDateString()
+                      : "—"}
+                  </strong>
+
+                  <small>
+                    {selectedInvoice.customer?.customerType ||
+                      "Customer"}
+                  </small>
+                </div>
+              </div>
+
+              <div className="invoice-details-section">
+                <h3>Products</h3>
+
+                {selectedInvoice.items?.length > 0 ? (
+                  <div className="invoice-details-items-wrapper">
+                    <table className="invoice-details-items-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Product</th>
+                          <th>Qty</th>
+                          <th>Unit Price</th>
+                          <th>Total</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {selectedInvoice.items.map(
+                          (item, index) => (
+                            <tr
+                              key={`${selectedInvoice._id}-${index}`}
+                            >
+                              <td>{index + 1}</td>
+
+                              <td>
+                                <strong>
+                                  {item.product?.name ||
+                                    "Product"}
+                                </strong>
+
+                                {item.product?.unit && (
+                                  <small>
+                                    {item.product.unit}
+                                  </small>
+                                )}
+                              </td>
+
+                              <td>{item.quantity}</td>
+
+                              <td>
+                                ₦
+                                {Number(
+                                  item.unitPrice || 0
+                                ).toLocaleString()}
+                              </td>
+
+                              <td>
+                                ₦
+                                {Number(
+                                  item.totalPrice || 0
+                                ).toLocaleString()}
+                              </td>
+                            </tr>
+                          )
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="invoice-details-empty">
+                    No products found on this invoice.
+                  </p>
+                )}
+              </div>
+
+              <div className="invoice-details-bottom">
+                <div className="invoice-payment-summary">
+                  <h3>Payment Information</h3>
+
+                  <div className="invoice-detail-row">
+                    <span>Payment Method</span>
+
+                    <strong>
+                      {selectedInvoice.paymentMethod
+                        ? selectedInvoice.paymentMethod.replace(
+                            /\b\w/g,
+                            (letter) => letter.toUpperCase()
+                          )
+                        : "—"}
+                    </strong>
+                  </div>
+
+                  {selectedInvoice.paymentMethod ===
+                    "transfer" &&
+                    selectedInvoice.paymentChannel && (
+                      <div className="invoice-detail-row">
+                        <span>Transfer Channel</span>
+
+                        <strong>
+                          {selectedInvoice.paymentChannel.replace(
+                            /\b\w/g,
+                            (letter) => letter.toUpperCase()
+                          )}
+                        </strong>
+                      </div>
+                    )}
+
+                  <div className="invoice-detail-row">
+                    <span>Status</span>
+
+                    <strong
+                      className={`invoice-details-status status-${
+                        selectedInvoice.status || "unpaid"
+                      }`}
+                    >
+                      {selectedInvoice.status
+                        ? selectedInvoice.status.replace(
+                            "_",
+                            " "
+                          )
+                        : "unpaid"}
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="invoice-total-summary">
+                  <div className="invoice-detail-row">
+                    <span>Subtotal</span>
+
+                    <strong>
+                      ₦
+                      {Number(
+                        selectedInvoice.subtotal || 0
+                      ).toLocaleString()}
+                    </strong>
+                  </div>
+
+                  <div className="invoice-detail-row">
+                    <span>Amount Paid</span>
+
+                    <strong>
+                      ₦
+                      {Number(
+                        selectedInvoice.amountPaid || 0
+                      ).toLocaleString()}
+                    </strong>
+                  </div>
+
+                  <div className="invoice-detail-row invoice-detail-balance">
+                    <span>Balance</span>
+
+                    <strong>
+                      ₦
+                      {Number(
+                        selectedInvoice.balance || 0
+                      ).toLocaleString()}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="invoice-details-actions no-print">
+              <button
+                type="button"
+                className="invoice-details-close-button"
+                onClick={closeInvoiceDetails}
+              >
+                Close
+              </button>
+
+              <button
+                type="button"
+                className="invoice-print-button"
+                onClick={handlePrintInvoice}
+              >
+                Print Invoice
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -74,6 +74,42 @@
   font-size: 12px;
 }
 
+/* Sales Overview */
+
+.sales-overview {
+  margin-bottom: 30px;
+}
+
+.sales-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.sales-overview-item {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 22px;
+  min-height: 120px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.sales-overview-item span {
+  display: block;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.sales-overview-item strong {
+  display: block;
+  color: #111827;
+  font-size: 24px;
+  font-weight: 700;
+}
+
 /* Activity Sections */
 
 .dashboard-sections {
@@ -175,6 +211,10 @@
   .dashboard-cards {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .sales-overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* Mobile */
@@ -211,6 +251,28 @@
   .dashboard-card h2 {
     font-size: 24px;
   }
+
+  /* Sales Overview Mobile */
+
+  .sales-overview {
+    margin-bottom: 20px;
+  }
+
+  .sales-overview-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .sales-overview-item {
+    min-height: auto;
+    padding: 20px;
+  }
+
+  .sales-overview-item strong {
+    font-size: 22px;
+  }
+
+  /* Activity Sections */
 
   .dashboard-sections {
     grid-template-columns: 1fr;

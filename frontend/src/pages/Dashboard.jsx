@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API_URL from "../api";
 import Sidebar from "../components/Sidebar";
 import "./Dashboard.css";
@@ -7,6 +8,8 @@ const Dashboard = ({ onLogout }) => {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -104,6 +107,39 @@ const Dashboard = ({ onLogout }) => {
           </div>
         </div>
 
+        {/* Sales Overview */}
+        <section className="dashboard-section sales-overview">
+          <div className="section-header">
+            <div>
+              <h2>Sales Overview</h2>
+              <p>Current sales and payment position</p>
+            </div>
+          </div>
+
+          <div className="sales-overview-grid">
+            <div className="sales-overview-item">
+              <span>Total Sales</span>
+              <strong>
+                ₦{Number(summary.totalSales || 0).toLocaleString()}
+              </strong>
+            </div>
+
+            <div className="sales-overview-item">
+              <span>Payments Received</span>
+              <strong>
+                ₦{Number(summary.totalPayments || 0).toLocaleString()}
+              </strong>
+            </div>
+
+            <div className="sales-overview-item">
+              <span>Outstanding</span>
+              <strong>
+                ₦{Number(summary.totalOutstanding || 0).toLocaleString()}
+              </strong>
+            </div>
+          </div>
+        </section>
+
         {/* Recent Activity */}
         <div className="dashboard-sections">
           {/* Recent Invoices */}
@@ -114,7 +150,12 @@ const Dashboard = ({ onLogout }) => {
                 <p>Latest invoices created</p>
               </div>
 
-              <button>View All</button>
+              <button
+                type="button"
+                onClick={() => navigate("/invoices")}
+              >
+                View All
+              </button>
             </div>
 
             {summary.recentInvoices.length === 0 ? (
@@ -125,6 +166,7 @@ const Dashboard = ({ onLogout }) => {
                   <div className="activity-item" key={invoice._id}>
                     <div className="activity-info">
                       <strong>{invoice.invoiceNumber}</strong>
+
                       <span>
                         {invoice.customer?.name || "Unknown customer"}
                       </span>
@@ -147,7 +189,12 @@ const Dashboard = ({ onLogout }) => {
                 <p>Latest payments received</p>
               </div>
 
-              <button>View All</button>
+              <button
+                type="button"
+                onClick={() => navigate("/payments")}
+              >
+                View All
+              </button>
             </div>
 
             {summary.recentPayments.length === 0 ? (
