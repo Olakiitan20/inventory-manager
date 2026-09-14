@@ -117,7 +117,7 @@ const Dashboard = ({ onLogout }) => {
         {/* Header */}
         <div className="dashboard-header">
           <div>
-            <h1>Welcome, {userName} 👋</h1>
+            <h1>Welcome, {userName} </h1>
             <p>
               Here's what's happening with your inventory today.
             </p>
