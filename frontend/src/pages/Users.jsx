@@ -1,70 +1,68 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API_URL from "../api";
+
 import Sidebar from "../components/Sidebar";
+import API_URL from "../api";
+
 import "./Users.css";
 
-const Users = () => {
+function Users() {
   const navigate = useNavigate();
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
   const [updatingUserId, setUpdatingUserId] = useState(null);
   const [deletingUserId, setDeletingUserId] = useState(null);
+
   const [currentUser, setCurrentUser] = useState(null);
 
-  // ==========================================
-  // LOGOUT
-  // ==========================================
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const [searchTerm, setSearchTerm] = useState("");
 
-    window.location.href = "/login";
-  };
+  /* =========================================
+     GET CURRENT USER
+  ========================================= */
 
-  // ==========================================
-  // CHECK CURRENT USER
-  // ==========================================
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-
-    if (!storedUser) {
-      navigate("/login", { replace: true });
-      return;
-    }
-
     try {
+      const storedUser = localStorage.getItem("user");
+
+      if (!storedUser) {
+        navigate("/login", { replace: true });
+        return;
+      }
+
       const user = JSON.parse(storedUser);
 
       setCurrentUser(user);
 
-      if (user?.role !== "admin") {
+      if (user.role !== "admin") {
         navigate("/dashboard", { replace: true });
       }
     } catch (error) {
-      console.error(
-        "User information error:",
-        error
-      );
-
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-
+      console.error("Error reading current user:", error);
       navigate("/login", { replace: true });
     }
   }, [navigate]);
 
-  // ==========================================
-  // FETCH USERS
-  // ==========================================
+  /* =========================================
+     FETCH USERS
+  ========================================= */
+
   const fetchUsers = async () => {
     try {
       setLoading(true);
       setError("");
 
       const token = localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/login", { replace: true });
+        return;
+      }
 
       const response = await fetch(`${API_URL}/users`, {
         method: "GET",
@@ -76,36 +74,13 @@ const Users = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-
-          window.location.href = "/login";
-          return;
-        }
-
-        if (response.status === 403) {
-          navigate("/dashboard", {
-            replace: true,
-          });
-
-          return;
-        }
-
-        throw new Error(
-          data.message ||
-            "Failed to fetch users"
-        );
+        throw new Error(data.message || "Failed to fetch users");
       }
 
       setUsers(data.users || []);
     } catch (error) {
-      console.error(
-        "Users error:",
-        error.message
-      );
-
-      setError(error.message);
+      console.error("Fetch users error:", error);
+      setError(error.message || "Failed to load users");
     } finally {
       setLoading(false);
     }
@@ -117,26 +92,58 @@ const Users = () => {
     }
   }, [currentUser]);
 
-  // ==========================================
-  // CHANGE USER ROLE
-  // ==========================================
-  const handleRoleChange = async (user) => {
-    const newRole =
-      user.role === "admin"
-        ? "staff"
-        : "admin";
+  /* =========================================
+     SEARCH / FILTER USERS
+  ========================================= */
 
-    const confirmChange = window.confirm(
-      `Are you sure you want to change ${user.name}'s role to ${newRole}?`
+  const filteredUsers = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
+
+    if (!search) {
+      return users;
+    }
+
+    return users.filter((user) => {
+      const name = user.name?.toLowerCase() || "";
+      const email = user.email?.toLowerCase() || "";
+      const role = user.role?.toLowerCase() || "";
+
+      return (
+        name.includes(search) ||
+        email.includes(search) ||
+        role.includes(search)
+      );
+    });
+  }, [users, searchTerm]);
+
+  /* =========================================
+     CHANGE USER ROLE
+  ========================================= */
+
+  const handleRoleChange = async (user) => {
+    if (!currentUser) {
+      return;
+    }
+
+    if (user._id === currentUser.id || user._id === currentUser._id) {
+      setError("You cannot change your own role.");
+      return;
+    }
+
+    const newRole = user.role === "admin" ? "staff" : "admin";
+
+    const confirmed = window.confirm(
+      `Are you sure you want to make ${user.name} a ${newRole}?`
     );
 
-    if (!confirmChange) {
+    if (!confirmed) {
       return;
     }
 
     try {
       setUpdatingUserId(user._id);
       setError("");
+      setSuccess("");
 
       const token = localStorage.getItem("token");
 
@@ -144,13 +151,10 @@ const Users = () => {
         `${API_URL}/users/${user._id}/role`,
         {
           method: "PUT",
-
           headers: {
-            "Content-Type":
-              "application/json",
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-
           body: JSON.stringify({
             role: newRole,
           }),
@@ -160,165 +164,236 @@ const Users = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-
-          window.location.href = "/login";
-          return;
-        }
-
-        throw new Error(
-          data.message ||
-            "Failed to update user role"
-        );
+        throw new Error(data.message || "Failed to update user role");
       }
 
-      // Update the user immediately
-      setUsers((previousUsers) =>
-        previousUsers.map((item) =>
+      setUsers((prevUsers) =>
+        prevUsers.map((item) =>
           item._id === user._id
             ? {
                 ...item,
-                role: data.user.role,
+                role: newRole,
               }
             : item
         )
       );
-    } catch (error) {
-      console.error(
-        "Role update error:",
-        error.message
-      );
 
-      setError(error.message);
+      setSuccess(
+        `${user.name}'s role has been changed to ${newRole}.`
+      );
+    } catch (error) {
+      console.error("Update role error:", error);
+      setError(error.message || "Failed to update user role");
     } finally {
       setUpdatingUserId(null);
     }
   };
 
-  // ==========================================
-  // DELETE USER
-  // ==========================================
-  const handleDeleteUser = async (user) => {
-    // Never allow deletion of current account
-    if (
-      currentUser?.id === user._id ||
-      currentUser?.id ===
-        user._id?.toString()
-    ) {
-      setError(
-        "You cannot delete your own account."
-      );
+  /* =========================================
+     DELETE USER
+  ========================================= */
 
+  const handleDeleteUser = async (user) => {
+    if (!currentUser) {
       return;
     }
 
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete ${user.name}'s account?\n\nThis user will no longer be able to log in.\n\nThis action cannot be undone.`
+    if (user._id === currentUser.id || user._id === currentUser._id) {
+      setError("You cannot delete your own account.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${user.name}? This action cannot be undone.`
     );
 
-    if (!confirmDelete) {
+    if (!confirmed) {
       return;
     }
 
     try {
       setDeletingUserId(user._id);
       setError("");
+      setSuccess("");
 
       const token = localStorage.getItem("token");
 
-      const response = await fetch(
-        `${API_URL}/users/${user._id}`,
-        {
-          method: "DELETE",
-
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_URL}/users/${user._id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-
-          window.location.href = "/login";
-
-          return;
-        }
-
-        if (response.status === 403) {
-          navigate("/dashboard", {
-            replace: true,
-          });
-
-          return;
-        }
-
-        throw new Error(
-          data.message ||
-            "Failed to delete user"
-        );
+        throw new Error(data.message || "Failed to delete user");
       }
 
-      // Remove the deleted user immediately
-      setUsers((previousUsers) =>
-        previousUsers.filter(
-          (item) =>
-            item._id !== user._id
-        )
-      );
-    } catch (error) {
-      console.error(
-        "Delete user error:",
-        error.message
+      setUsers((prevUsers) =>
+        prevUsers.filter((item) => item._id !== user._id)
       );
 
-      setError(error.message);
+      setSuccess(`${user.name} has been deleted successfully.`);
+    } catch (error) {
+      console.error("Delete user error:", error);
+      setError(error.message || "Failed to delete user");
     } finally {
       setDeletingUserId(null);
     }
   };
 
-  // ==========================================
-  // PAGE
-  // ==========================================
+  /* =========================================
+     FORMAT DATE
+  ========================================= */
+
+  const formatDate = (date) => {
+    if (!date) {
+      return "—";
+    }
+
+    return new Date(date).toLocaleDateString("en-NG", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  /* =========================================
+     GET INITIALS
+  ========================================= */
+
+  const getInitials = (name) => {
+    if (!name) {
+      return "U";
+    }
+
+    return name
+      .trim()
+      .split(" ")
+      .slice(0, 2)
+      .map((part) => part.charAt(0))
+      .join("")
+      .toUpperCase();
+  };
+
+  /* =========================================
+     PAGE
+  ========================================= */
+
   return (
     <div className="users-layout">
-      <Sidebar onLogout={handleLogout} />
+      <Sidebar />
 
       <main className="users-content">
-        <div className="users-header">
-          <div>
-            <h1>Users</h1>
+        {/* HEADER */}
 
-            <p>
-              Manage your team members and
-              their access levels.
-            </p>
-          </div>
+        <div className="users-header">
+          <h1>User Management</h1>
+
+          <p>
+            Manage your team members and control their access
+            levels.
+          </p>
         </div>
 
+        {/* ERROR */}
+
         {error && (
-          <div className="users-alert users-alert-error">
-            {error}
+          <div className="users-alert-error">
+            <span>{error}</span>
+
+            <button
+              type="button"
+              onClick={() => setError("")}
+              aria-label="Close error"
+            >
+              ×
+            </button>
           </div>
         )}
 
-        <div className="users-card">
+        {/* SUCCESS */}
+
+        {success && (
+          <div className="users-alert-success">
+            <span>{success}</span>
+
+            <button
+              type="button"
+              onClick={() => setSuccess("")}
+              aria-label="Close success message"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        {/* USERS CARD */}
+
+        <section className="users-card">
+          {/* TOOLBAR */}
+
+          <div className="users-toolbar">
+            <div className="users-toolbar-info">
+              <h2>
+                Team Members{" "}
+                <span className="users-count">
+                  ({filteredUsers.length})
+                </span>
+              </h2>
+
+              <p>
+                View and manage users registered in your
+                inventory system.
+              </p>
+            </div>
+
+            {/* SEARCH BAR */}
+
+            <div className="users-search">
+              <span className="users-search-icon">
+                🔍
+              </span>
+
+              <input
+                type="text"
+                placeholder="Search name, email or role..."
+                value={searchTerm}
+                onChange={(event) =>
+                  setSearchTerm(event.target.value)
+                }
+              />
+
+              {searchTerm && (
+                <button
+                  type="button"
+                  className="clear-search"
+                  onClick={() => setSearchTerm("")}
+                  aria-label="Clear search"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* LOADING */}
+
           {loading ? (
-            <div className="users-empty">
+            <div className="users-loading">
               Loading users...
             </div>
-          ) : users.length === 0 ? (
+          ) : filteredUsers.length === 0 ? (
             <div className="users-empty">
-              No users found.
+              {searchTerm
+                ? `No users found matching "${searchTerm}".`
+                : "No users found."}
             </div>
           ) : (
+            /* TABLE */
+
             <div className="users-table-wrapper">
               <table className="users-table">
                 <thead>
@@ -332,40 +407,35 @@ const Users = () => {
                 </thead>
 
                 <tbody>
-                  {users.map((user) => {
+                  {filteredUsers.map((user) => {
                     const isCurrentUser =
-                      currentUser?.id ===
-                        user._id ||
-                      currentUser?.id ===
-                        user._id?.toString();
+                      user._id === currentUser?._id ||
+                      user._id === currentUser?.id;
 
                     const isUpdating =
-                      updatingUserId ===
-                      user._id;
+                      updatingUserId === user._id;
 
                     const isDeleting =
-                      deletingUserId ===
-                      user._id;
+                      deletingUserId === user._id;
 
                     return (
                       <tr key={user._id}>
                         {/* USER */}
+
                         <td>
-                          <div className="users-name">
+                          <div className="user-info">
                             <div className="user-avatar">
-                              {user.name
-                                ?.charAt(0)
-                                .toUpperCase()}
+                              {getInitials(user.name)}
                             </div>
 
-                            <div>
-                              <strong>
+                            <div className="user-details">
+                              <span className="user-name">
                                 {user.name}
-                              </strong>
+                              </span>
 
                               {isCurrentUser && (
-                                <span className="current-user-label">
-                                  You
+                                <span className="user-email">
+                                  Your account
                                 </span>
                               )}
                             </div>
@@ -373,6 +443,7 @@ const Users = () => {
                         </td>
 
                         {/* EMAIL */}
+
                         <td>
                           <span className="user-email">
                             {user.email}
@@ -380,53 +451,41 @@ const Users = () => {
                         </td>
 
                         {/* ROLE */}
+
                         <td>
                           <span
-                            className={`user-role ${
-                              user.role ===
-                              "admin"
-                                ? "user-role-admin"
-                                : "user-role-staff"
+                            className={`role-badge ${
+                              user.role === "admin"
+                                ? "admin"
+                                : "staff"
                             }`}
                           >
-                            {user.role ===
-                            "admin"
-                              ? "Admin"
-                              : "Staff"}
+                            {user.role}
                           </span>
                         </td>
 
-                        {/* DATE */}
+                        {/* JOINED */}
+
                         <td>
-                          <span className="user-date">
-                            {user.createdAt
-                              ? new Date(
-                                  user.createdAt
-                                ).toLocaleDateString()
-                              : "—"}
+                          <span className="joined-date">
+                            {formatDate(user.createdAt)}
                           </span>
                         </td>
 
-                        {/* ACTIONS */}
+                        {/* ACTION */}
+
                         <td>
                           {isCurrentUser ? (
-                            <span className="protected-label">
+                            <span className="current-user-label">
                               Your account
                             </span>
                           ) : (
                             <div className="user-actions">
                               <button
                                 type="button"
-                                className={
-                                  user.role ===
-                                  "admin"
-                                    ? "role-button role-button-staff"
-                                    : "role-button role-button-admin"
-                                }
+                                className="role-button"
                                 onClick={() =>
-                                  handleRoleChange(
-                                    user
-                                  )
+                                  handleRoleChange(user)
                                 }
                                 disabled={
                                   isUpdating ||
@@ -435,8 +494,7 @@ const Users = () => {
                               >
                                 {isUpdating
                                   ? "Updating..."
-                                  : user.role ===
-                                    "admin"
+                                  : user.role === "admin"
                                   ? "Make Staff"
                                   : "Make Admin"}
                               </button>
@@ -445,9 +503,7 @@ const Users = () => {
                                 type="button"
                                 className="delete-user-button"
                                 onClick={() =>
-                                  handleDeleteUser(
-                                    user
-                                  )
+                                  handleDeleteUser(user)
                                 }
                                 disabled={
                                   isUpdating ||
@@ -468,10 +524,10 @@ const Users = () => {
               </table>
             </div>
           )}
-        </div>
+        </section>
       </main>
     </div>
   );
-};
+}
 
 export default Users;
