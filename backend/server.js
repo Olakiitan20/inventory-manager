@@ -4,7 +4,7 @@ require("dotenv").config();
 
 const connectDB = require("./config/db");
 
-// Router
+// Routers
 const authRoutes = require("./routes/authRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const productRoutes = require("./routes/productRoutes");
@@ -12,6 +12,7 @@ const stockMovementRoutes = require("./routes/stockMovementRoutes");
 const invoiceRoutes = require("./routes/invoiceRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/stock", stockMovementRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/users", userRoutes);
 
 // Test route
 app.get("/", (req, res) => {

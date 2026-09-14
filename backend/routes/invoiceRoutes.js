@@ -6,7 +6,7 @@ const {
   getInvoiceById,
 } = require("../controllers/invoiceController");
 
-const protect = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 

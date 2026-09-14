@@ -31,7 +31,12 @@ const Login = ({ onLoginSuccess }) => {
         return;
       }
 
+      // Save authentication token
       localStorage.setItem("token", data.token);
+
+      // Save logged-in user information
+      // This includes the user's role
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       onLoginSuccess();
     } catch (error) {

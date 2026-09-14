@@ -8,7 +8,7 @@ const {
   deleteCustomer,
 } = require("../controllers/customerController");
 
-const protect = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router.get("/", protect, getCustomers);
 
 router.get("/:id", protect, getCustomerById);
 
-router.put("/:id", protect, updateCustomer)
+router.put("/:id", protect, updateCustomer);
 
 router.delete("/:id", protect, deleteCustomer);
 

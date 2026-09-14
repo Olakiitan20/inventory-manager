@@ -13,9 +13,26 @@ import Products from "./pages/Products";
 import Inventory from "./pages/Inventory";
 import Invoices from "./pages/Invoices";
 import Payments from "./pages/Payments";
+import Users from "./pages/Users";
+import ChangePassword from "./pages/ChangePassword";
 
 function App() {
   const isLoggedIn = Boolean(localStorage.getItem("token"));
+
+  // Get logged-in user
+  let currentUser = null;
+
+  try {
+    const storedUser = localStorage.getItem("user");
+
+    if (storedUser) {
+      currentUser = JSON.parse(storedUser);
+    }
+  } catch (error) {
+    console.error("Error reading user information:", error);
+  }
+
+  const isAdmin = currentUser?.role === "admin";
 
   const handleLoginSuccess = () => {
     window.location.href = "/dashboard";
@@ -23,6 +40,8 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
     window.location.href = "/login";
   };
 
@@ -102,7 +121,7 @@ function App() {
           }
         />
 
-        {/* INVOICE */}
+        {/* INVOICES */}
         <Route
           path="/invoices"
           element={
@@ -115,17 +134,31 @@ function App() {
         />
 
         {/* PAYMENTS */}
-
         <Route
           path="/payments"
           element={
-            isLoggedIn ?(
+            isLoggedIn ? (
               <Payments />
             ) : (
               <Navigate to="/login" replace />
             )
           }
-        />  
+        />
+
+        {/* USERS - ADMIN ONLY */}
+        <Route
+          path="/users"
+          element={
+            isLoggedIn && isAdmin ? (
+              <Users />
+            ) : (
+              <Navigate
+                to={isLoggedIn ? "/dashboard" : "/login"}
+                replace
+              />
+            )
+          }
+        />
 
         {/* DEFAULT */}
         <Route
@@ -135,6 +168,18 @@ function App() {
               to={isLoggedIn ? "/dashboard" : "/login"}
               replace
             />
+          }
+        />
+        
+        {/* CHANGE PASSWORD */}
+        <Route
+          path="/change-password"
+          element={
+            isLoggedIn ? (
+              <ChangePassword />
+            ) : (
+              <Navigate to="/login" replace />
+            )
           }
         />
 

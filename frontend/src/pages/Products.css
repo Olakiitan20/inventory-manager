@@ -9,7 +9,9 @@
   min-height: 100vh;
 }
 
+/* ============================= */
 /* HEADER */
+/* ============================= */
 
 .products-header {
   display: flex;
@@ -31,7 +33,9 @@
   font-size: 14px;
 }
 
+/* ============================= */
 /* ADD BUTTON */
+/* ============================= */
 
 .add-product-button {
   border: none;
@@ -42,14 +46,17 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .add-product-button:hover {
   background: #1d4ed8;
+  transform: translateY(-1px);
 }
 
+/* ============================= */
 /* PRODUCTS CARD */
+/* ============================= */
 
 .products-card {
   background: #ffffff;
@@ -59,7 +66,9 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
+/* ============================= */
 /* TABLE */
+/* ============================= */
 
 .products-table-wrapper {
   width: 100%;
@@ -69,7 +78,7 @@
 .products-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 850px;
+  min-width: 950px;
 }
 
 .products-table th {
@@ -80,6 +89,7 @@
   font-size: 12px;
   font-weight: 600;
   border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
 }
 
 .products-table td {
@@ -87,6 +97,7 @@
   color: #374151;
   font-size: 13px;
   border-bottom: 1px solid #f0f1f3;
+  vertical-align: middle;
 }
 
 .products-table tbody tr:last-child td {
@@ -97,7 +108,9 @@
   background: #f9fafb;
 }
 
+/* ============================= */
 /* PRODUCT NAME */
+/* ============================= */
 
 .product-name {
   display: flex;
@@ -115,7 +128,9 @@
   font-size: 11px;
 }
 
+/* ============================= */
 /* UNIT */
+/* ============================= */
 
 .product-unit {
   display: inline-block;
@@ -128,7 +143,9 @@
   text-transform: capitalize;
 }
 
+/* ============================= */
 /* STOCK */
+/* ============================= */
 
 .stock-good,
 .stock-low {
@@ -151,7 +168,65 @@
   color: #dc2626;
 }
 
+/* ============================= */
+/* ACTIONS */
+/* ============================= */
+
+.product-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+/* DELETE BUTTON */
+
+.delete-product-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+
+  background: #fef2f2;
+  color: #dc2626;
+
+  padding: 7px 11px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.delete-product-button:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+  transform: translateY(-1px);
+}
+
+.delete-product-button:active {
+  transform: translateY(0);
+}
+
+.delete-product-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================= */
 /* ALERTS */
+/* ============================= */
 
 .product-alert {
   padding: 12px 15px;
@@ -173,7 +248,9 @@
   border: 1px solid #fecaca;
 }
 
+/* ============================= */
 /* EMPTY MESSAGE */
+/* ============================= */
 
 .empty-message {
   color: #9ca3af;
@@ -182,39 +259,56 @@
   text-align: center;
 }
 
+/* ============================= */
 /* MODAL OVERLAY */
+/* ============================= */
 
 .product-modal-overlay {
   position: fixed;
   inset: 0;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   padding: 20px;
+
   background: rgba(17, 24, 39, 0.55);
+
   z-index: 10000;
 }
 
+/* ============================= */
 /* MODAL */
+/* ============================= */
 
 .product-modal {
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
+
   overflow-y: auto;
+
   background: #ffffff;
+
   border-radius: 16px;
+
   padding: 26px;
+
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+
   animation: productModalAppear 0.2s ease;
 }
 
+/* ============================= */
 /* MODAL HEADER */
+/* ============================= */
 
 .product-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+
   margin-bottom: 24px;
 }
 
@@ -233,13 +327,21 @@
 .product-modal-close {
   width: 34px;
   height: 34px;
+
   border: none;
   border-radius: 8px;
+
   background: #f3f4f6;
   color: #6b7280;
+
   font-size: 24px;
   line-height: 1;
+
   cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .product-modal-close:hover {
@@ -247,7 +349,9 @@
   color: #111827;
 }
 
+/* ============================= */
 /* FORM */
+/* ============================= */
 
 .product-form {
   display: flex;
@@ -278,14 +382,20 @@
 .product-form-group textarea {
   width: 100%;
   box-sizing: border-box;
+
   border: 1px solid #d1d5db;
   border-radius: 8px;
+
   padding: 11px 12px;
+
   background: #ffffff;
   color: #111827;
+
   font-family: inherit;
   font-size: 13px;
+
   outline: none;
+
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -305,17 +415,22 @@
 .product-form-group select:focus,
 .product-form-group textarea:focus {
   border-color: #2563eb;
+
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+/* ============================= */
 /* MODAL ACTIONS */
+/* ============================= */
 
 .product-modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+
   margin-top: 6px;
   padding-top: 18px;
+
   border-top: 1px solid #e5e7eb;
 }
 
@@ -323,10 +438,17 @@
 .product-save-button {
   border: none;
   border-radius: 8px;
+
   padding: 11px 16px;
+
   font-size: 13px;
   font-weight: 600;
+
   cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .product-cancel-button {
@@ -345,6 +467,7 @@
 
 .product-save-button:hover {
   background: #1d4ed8;
+  transform: translateY(-1px);
 }
 
 .product-save-button:disabled,
@@ -352,9 +475,12 @@
 .product-modal-close:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
+/* ============================= */
 /* ANIMATION */
+/* ============================= */
 
 @keyframes productModalAppear {
   from {
@@ -368,7 +494,9 @@
   }
 }
 
+/* ============================= */
 /* MOBILE */
+/* ============================= */
 
 @media (max-width: 600px) {
   .products-content {
@@ -397,6 +525,18 @@
 
   .products-card {
     padding: 12px;
+  }
+
+  .products-table {
+    min-width: 950px;
+  }
+
+  .product-actions {
+    justify-content: flex-start;
+  }
+
+  .delete-product-button {
+    padding: 7px 10px;
   }
 
   .product-modal {

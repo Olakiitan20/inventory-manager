@@ -8,30 +8,86 @@ const Dashboard = ({ onLogout }) => {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [userName, setUserName] = useState("User");
 
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Get logged-in user information
+    const storedUser = localStorage.getItem("user");
+
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+
+        if (user?.name) {
+          setUserName(user.name);
+        }
+      } catch (error) {
+        console.error(
+          "Error reading user information:",
+          error
+        );
+      }
+    }
+
     const fetchDashboard = async () => {
       try {
         const token = localStorage.getItem("token");
 
-        const response = await fetch(`${API_URL}/dashboard/summary`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        if (!token) {
+          onLogout();
+          return;
+        }
+
+        const response = await fetch(
+          `${API_URL}/dashboard/summary`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const data = await response.json();
 
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+
+          navigate("/login", { replace: true });
+          return;
+        }
+
         if (!response.ok) {
-          throw new Error(data.message || "Failed to fetch dashboard");
+          throw new Error(
+            data.message || "Failed to fetch dashboard"
+          );
         }
 
         setSummary(data.summary);
       } catch (error) {
-        console.error("Dashboard error:", error.message);
+        console.error(
+          "Dashboard error:",
+          error.message
+        );
+
+        if (
+          error.message
+            .toLowerCase()
+            .includes("token") ||
+          error.message
+            .toLowerCase()
+            .includes("unauthorized")
+        ) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+
+          navigate("/login", { replace: true });
+          return;
+        }
+
         setError(error.message);
       } finally {
         setLoading(false);
@@ -39,7 +95,7 @@ const Dashboard = ({ onLogout }) => {
     };
 
     fetchDashboard();
-  }, []);
+  }, [navigate, onLogout]);
 
   if (loading) {
     return <h2>Loading dashboard...</h2>;
@@ -47,6 +103,10 @@ const Dashboard = ({ onLogout }) => {
 
   if (error) {
     return <h2>{error}</h2>;
+  }
+
+  if (!summary) {
+    return null;
   }
 
   return (
@@ -57,8 +117,10 @@ const Dashboard = ({ onLogout }) => {
         {/* Header */}
         <div className="dashboard-header">
           <div>
-            <h1>Dashboard</h1>
-            <p>Welcome back! Here's what's happening today.</p>
+            <h1>Welcome, {userName} 👋</h1>
+            <p>
+              Here's what's happening with your inventory today.
+            </p>
           </div>
         </div>
 
@@ -90,19 +152,34 @@ const Dashboard = ({ onLogout }) => {
 
           <div className="dashboard-card">
             <span className="card-label">Total Sales</span>
-            <h2>₦{summary.totalSales.toLocaleString()}</h2>
+            <h2>
+              ₦
+              {Number(
+                summary.totalSales || 0
+              ).toLocaleString()}
+            </h2>
             <p>Total invoice sales</p>
           </div>
 
           <div className="dashboard-card">
             <span className="card-label">Payments</span>
-            <h2>₦{summary.totalPayments.toLocaleString()}</h2>
+            <h2>
+              ₦
+              {Number(
+                summary.totalPayments || 0
+              ).toLocaleString()}
+            </h2>
             <p>Total payments received</p>
           </div>
 
           <div className="dashboard-card">
             <span className="card-label">Outstanding</span>
-            <h2>₦{summary.totalOutstanding.toLocaleString()}</h2>
+            <h2>
+              ₦
+              {Number(
+                summary.totalOutstanding || 0
+              ).toLocaleString()}
+            </h2>
             <p>Outstanding balance</p>
           </div>
         </div>
@@ -119,25 +196,115 @@ const Dashboard = ({ onLogout }) => {
           <div className="sales-overview-grid">
             <div className="sales-overview-item">
               <span>Total Sales</span>
+
               <strong>
-                ₦{Number(summary.totalSales || 0).toLocaleString()}
+                ₦
+                {Number(
+                  summary.totalSales || 0
+                ).toLocaleString()}
               </strong>
             </div>
 
             <div className="sales-overview-item">
               <span>Payments Received</span>
+
               <strong>
-                ₦{Number(summary.totalPayments || 0).toLocaleString()}
+                ₦
+                {Number(
+                  summary.totalPayments || 0
+                ).toLocaleString()}
               </strong>
             </div>
 
             <div className="sales-overview-item">
               <span>Outstanding</span>
+
               <strong>
-                ₦{Number(summary.totalOutstanding || 0).toLocaleString()}
+                ₦
+                {Number(
+                  summary.totalOutstanding || 0
+                ).toLocaleString()}
               </strong>
             </div>
           </div>
+        </section>
+
+        {/* Best-Selling Products */}
+        <section
+          className="dashboard-section best-selling-section"
+          style={{ marginTop: "20px" }}
+        >
+          <div className="section-header">
+            <div>
+              <h2>🏆 Best-Selling Products</h2>
+              <p>Products with the highest quantity sold</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => navigate("/products")}
+            >
+              View Products
+            </button>
+          </div>
+
+          {!summary.bestSellingProducts ||
+          summary.bestSellingProducts.length === 0 ? (
+            <p className="empty-message">
+              No product sales recorded yet.
+            </p>
+          ) : (
+            <div className="best-selling-list">
+              {summary.bestSellingProducts.map(
+                (product, index) => (
+                  <div
+                    className="best-selling-item"
+                    key={product.productId}
+                  >
+                    <div className="best-selling-rank">
+                      #{index + 1}
+                    </div>
+
+                    <div className="best-selling-info">
+                      <strong>
+                        {product.productName ||
+                          "Unknown product"}
+                      </strong>
+
+                      <span>
+                        {product.category ||
+                          "Product"}{" "}
+                        {product.unit
+                          ? `• ${product.unit}`
+                          : ""}
+                      </span>
+                    </div>
+
+                    <div className="best-selling-stats">
+                      <strong>
+                        {Number(
+                          product.totalQuantitySold || 0
+                        ).toLocaleString()}
+                      </strong>
+
+                      <span>units sold</span>
+                    </div>
+
+                    <div className="best-selling-sales">
+                      <strong>
+                        ₦
+                        {Number(
+                          product.totalSalesAmount || 0
+                        ).toLocaleString()}
+                      </strong>
+
+                      <span>sales</span>
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          )}
         </section>
 
         {/* Recent Activity */}
@@ -159,24 +326,37 @@ const Dashboard = ({ onLogout }) => {
             </div>
 
             {summary.recentInvoices.length === 0 ? (
-              <p className="empty-message">No invoices yet.</p>
+              <p className="empty-message">
+                No invoices yet.
+              </p>
             ) : (
               <div className="activity-list">
-                {summary.recentInvoices.map((invoice) => (
-                  <div className="activity-item" key={invoice._id}>
-                    <div className="activity-info">
-                      <strong>{invoice.invoiceNumber}</strong>
+                {summary.recentInvoices.map(
+                  (invoice) => (
+                    <div
+                      className="activity-item"
+                      key={invoice._id}
+                    >
+                      <div className="activity-info">
+                        <strong>
+                          {invoice.invoiceNumber}
+                        </strong>
 
-                      <span>
-                        {invoice.customer?.name || "Unknown customer"}
-                      </span>
-                    </div>
+                        <span>
+                          {invoice.customer?.name ||
+                            "Unknown customer"}
+                        </span>
+                      </div>
 
-                    <div className="activity-amount">
-                      ₦{invoice.totalAmount.toLocaleString()}
+                      <div className="activity-amount">
+                        ₦
+                        {Number(
+                          invoice.totalAmount || 0
+                        ).toLocaleString()}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             )}
           </section>
@@ -198,30 +378,147 @@ const Dashboard = ({ onLogout }) => {
             </div>
 
             {summary.recentPayments.length === 0 ? (
-              <p className="empty-message">No payments yet.</p>
+              <p className="empty-message">
+                No payments yet.
+              </p>
             ) : (
               <div className="activity-list">
-                {summary.recentPayments.map((payment) => (
-                  <div className="activity-item" key={payment._id}>
-                    <div className="activity-info">
-                      <strong>
-                        {payment.invoice?.invoiceNumber || "Payment"}
-                      </strong>
+                {summary.recentPayments.map(
+                  (payment) => (
+                    <div
+                      className="activity-item"
+                      key={payment._id}
+                    >
+                      <div className="activity-info">
+                        <strong>
+                          {payment.invoice
+                            ?.invoiceNumber ||
+                            "Payment"}
+                        </strong>
 
-                      <span>
-                        {payment.customer?.name || "Unknown customer"}
-                      </span>
-                    </div>
+                        <span>
+                          {payment.customer?.name ||
+                            "Unknown customer"}
+                        </span>
+                      </div>
 
-                    <div className="activity-amount">
-                      ₦{payment.amount.toLocaleString()}
+                      <div className="activity-amount">
+                        ₦
+                        {Number(
+                          payment.amount || 0
+                        ).toLocaleString()}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             )}
           </section>
         </div>
+
+        {/* Recent Stock Movements */}
+        <section
+          className="dashboard-section"
+          style={{ marginTop: "20px" }}
+        >
+          <div className="section-header">
+            <div>
+              <h2>Recent Stock Movements</h2>
+              <p>Latest inventory activity</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => navigate("/inventory")}
+            >
+              View All
+            </button>
+          </div>
+
+          {!summary.recentStockMovements ||
+          summary.recentStockMovements.length === 0 ? (
+            <p className="empty-message">
+              No stock movements yet.
+            </p>
+          ) : (
+            <div className="activity-list">
+              {summary.recentStockMovements.map(
+                (movement) => {
+                  const movementType =
+                    movement.type?.toLowerCase();
+
+                  const isStockIn =
+                    movementType === "in";
+
+                  const isStockOut =
+                    movementType === "out";
+
+                  return (
+                    <div
+                      className="activity-item"
+                      key={movement._id}
+                    >
+                      <div className="activity-info">
+                        <strong>
+                          {movement.product?.name ||
+                            "Unknown product"}
+                        </strong>
+
+                        <span>
+                          {movement.reason ||
+                            "Stock movement"}
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            fontWeight: "700",
+                            padding: "5px 9px",
+                            borderRadius: "6px",
+                            backgroundColor:
+                              isStockIn
+                                ? "#dcfce7"
+                                : isStockOut
+                                ? "#fee2e2"
+                                : "#fef3c7",
+                            color: isStockIn
+                              ? "#166534"
+                              : isStockOut
+                              ? "#991b1b"
+                              : "#92400e",
+                          }}
+                        >
+                          {isStockIn
+                            ? "Stock In"
+                            : isStockOut
+                            ? "Stock Out"
+                            : "Adjustment"}
+                        </span>
+
+                        <strong
+                          style={{
+                            fontSize: "13px",
+                            color: "#111827",
+                          }}
+                        >
+                          {movement.quantity}
+                        </strong>
+                      </div>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          )}
+        </section>
       </main>
     </div>
   );

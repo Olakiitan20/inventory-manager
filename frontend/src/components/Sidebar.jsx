@@ -1,18 +1,43 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
 const Sidebar = ({ onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const closeMobileMenu = () => {
     setIsOpen(false);
   };
 
-  return (
-    <aside className={`sidebar ${isOpen ? "sidebar-open" : ""}`}>
-      <div className="sidebar-top">
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
 
+    if (!storedUser) {
+      setIsAdmin(false);
+      return;
+    }
+
+    try {
+      const user = JSON.parse(storedUser);
+      setIsAdmin(user?.role === "admin");
+    } catch (error) {
+      console.error(
+        "Sidebar user information error:",
+        error
+      );
+
+      setIsAdmin(false);
+    }
+  }, []);
+
+  return (
+    <aside
+      className={`sidebar ${
+        isOpen ? "sidebar-open" : ""
+      }`}
+    >
+      <div className="sidebar-top">
         {/* Brand / Home Link */}
         <div className="sidebar-brand">
           <NavLink
@@ -37,7 +62,6 @@ const Sidebar = ({ onLogout }) => {
 
         {/* Navigation */}
         <nav className="sidebar-nav">
-
           <NavLink
             to="/dashboard"
             onClick={closeMobileMenu}
@@ -86,6 +110,16 @@ const Sidebar = ({ onLogout }) => {
             <span>Payments</span>
           </NavLink>
 
+          {/* ADMIN ONLY */}
+          {isAdmin && (
+            <NavLink
+              to="/users"
+              onClick={closeMobileMenu}
+            >
+              <span className="nav-icon">♙</span>
+              <span>Users</span>
+            </NavLink>
+          )}
         </nav>
       </div>
 

@@ -11,6 +11,10 @@ const Products = () => {
 
   const [showModal, setShowModal] = useState(false);
 
+  const [userRole, setUserRole] = useState("");
+
+  const [deletingProductId, setDeletingProductId] = useState(null);
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -25,10 +29,29 @@ const Products = () => {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState("");
 
+  const isAdmin = userRole === "admin";
+
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
     window.location.href = "/login";
   };
+
+  // Get logged-in user's role
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+
+        setUserRole(user?.role || "");
+      } catch (error) {
+        console.error("Error reading user information:", error);
+      }
+    }
+  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -36,6 +59,11 @@ const Products = () => {
       setError("");
 
       const token = localStorage.getItem("token");
+
+      if (!token) {
+        handleLogout();
+        return;
+      }
 
       const response = await fetch(`${API_URL}/products`, {
         method: "GET",
@@ -45,6 +73,14 @@ const Products = () => {
       });
 
       const data = await response.json();
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        window.location.href = "/login";
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(
@@ -101,6 +137,12 @@ const Products = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Frontend protection
+    if (!isAdmin) {
+      setError("Only admins can add products.");
+      return;
+    }
+
     setSaving(true);
     setError("");
     setSuccess("");
@@ -123,7 +165,8 @@ const Products = () => {
           unit: formData.unit,
           costPrice: Number(formData.costPrice),
           sellingPrice: Number(formData.sellingPrice),
-          stockQuantity: Number(formData.stockQuantity) || 0,
+          stockQuantity:
+            Number(formData.stockQuantity) || 0,
           lowStockThreshold:
             Number(formData.lowStockThreshold) || 10,
         }),
@@ -155,6 +198,73 @@ const Products = () => {
     }
   };
 
+  const handleDelete = async (productId, productName) => {
+    // Frontend protection
+    if (!isAdmin) {
+      setError("Only admins can delete products.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${productName}"?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingProductId(productId);
+      setError("");
+      setSuccess("");
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${API_URL}/products/${productId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        window.location.href = "/login";
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to delete product"
+        );
+      }
+
+      setProducts((previousProducts) =>
+        previousProducts.filter(
+          (product) => product._id !== productId
+        )
+      );
+
+      setSuccess("Product deleted successfully!");
+
+      setTimeout(() => {
+        setSuccess("");
+      }, 2000);
+    } catch (error) {
+      console.error("Delete product error:", error.message);
+      setError(error.message);
+    } finally {
+      setDeletingProductId(null);
+    }
+  };
+
   return (
     <div className="products-layout">
       <Sidebar onLogout={handleLogout} />
@@ -163,20 +273,31 @@ const Products = () => {
         <div className="products-header">
           <div>
             <h1>Products</h1>
-            <p>Manage your products and stock information.</p>
+            <p>
+              Manage your products and stock information.
+            </p>
           </div>
 
-          <button
-            className="add-product-button"
-            onClick={() => {
-              setError("");
-              setSuccess("");
-              setShowModal(true);
-            }}
-          >
-            + Add Product
-          </button>
+          {/* ADMIN ONLY */}
+          {isAdmin && (
+            <button
+              className="add-product-button"
+              onClick={() => {
+                setError("");
+                setSuccess("");
+                setShowModal(true);
+              }}
+            >
+              + Add Product
+            </button>
+          )}
         </div>
+
+        {success && !showModal && (
+          <div className="product-alert product-alert-success">
+            {success}
+          </div>
+        )}
 
         {error && !showModal && (
           <div className="product-alert product-alert-error">
@@ -204,6 +325,9 @@ const Products = () => {
                     <th>Cost Price</th>
                     <th>Selling Price</th>
                     <th>Stock</th>
+
+                    {/* ADMIN ONLY */}
+                    {isAdmin && <th>Actions</th>}
                   </tr>
                 </thead>
 
@@ -256,6 +380,31 @@ const Products = () => {
                           {product.stockQuantity}
                         </span>
                       </td>
+
+                      {/* ADMIN ONLY */}
+                      {isAdmin && (
+                        <td>
+                          <button
+                            type="button"
+                            className="delete-product-button"
+                            onClick={() =>
+                              handleDelete(
+                                product._id,
+                                product.name
+                              )
+                            }
+                            disabled={
+                              deletingProductId ===
+                              product._id
+                            }
+                          >
+                            {deletingProductId ===
+                            product._id
+                              ? "Deleting..."
+                              : "Delete"}
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -265,7 +414,8 @@ const Products = () => {
         </div>
       </main>
 
-      {showModal && (
+      {/* ADD PRODUCT MODAL - ADMIN ONLY */}
+      {showModal && isAdmin && (
         <div
           className="product-modal-overlay"
           onClick={closeModal}
@@ -277,6 +427,7 @@ const Products = () => {
             <div className="product-modal-header">
               <div>
                 <h2>Add Product</h2>
+
                 <p>
                   Create a new product for your inventory.
                 </p>
@@ -369,7 +520,9 @@ const Products = () => {
                   >
                     <option value="piece">Piece</option>
                     <option value="crate">Crate</option>
-                    <option value="carton">Carton</option>
+                    <option value="carton">
+                      Carton
+                    </option>
                     <option value="kg">Kg</option>
                     <option value="liter">Liter</option>
                   </select>

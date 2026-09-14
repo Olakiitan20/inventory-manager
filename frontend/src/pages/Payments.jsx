@@ -9,18 +9,24 @@ const Payments = () => {
   const [payments, setPayments] = useState([]);
 
   const [customerSearch, setCustomerSearch] = useState("");
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] =
+    useState(null);
 
-  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [selectedInvoice, setSelectedInvoice] =
+    useState(null);
 
   const [amount, setAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [paymentChannel, setPaymentChannel] = useState("");
+  const [paymentMethod, setPaymentMethod] =
+    useState("cash");
+  const [paymentChannel, setPaymentChannel] =
+    useState("");
   const [reference, setReference] = useState("");
 
-  const [historySearch, setHistorySearch] = useState("");
+  const [historySearch, setHistorySearch] =
+    useState("");
 
-  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [selectedPayment, setSelectedPayment] =
+    useState(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -30,6 +36,7 @@ const Payments = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     window.location.href = "/login";
   };
 
@@ -37,21 +44,31 @@ const Payments = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch(`${API_URL}/customers`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${API_URL}/customers`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch customers");
+        throw new Error(
+          data.message ||
+            "Failed to fetch customers"
+        );
       }
 
       setCustomers(data.customers || []);
     } catch (error) {
-      console.error("Customers error:", error.message);
+      console.error(
+        "Customers error:",
+        error.message
+      );
+
       setError(error.message);
     }
   };
@@ -60,21 +77,31 @@ const Payments = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch(`${API_URL}/invoices`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${API_URL}/invoices`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch invoices");
+        throw new Error(
+          data.message ||
+            "Failed to fetch invoices"
+        );
       }
 
       setInvoices(data.invoices || []);
     } catch (error) {
-      console.error("Invoices error:", error.message);
+      console.error(
+        "Invoices error:",
+        error.message
+      );
+
       setError(error.message);
     }
   };
@@ -83,21 +110,31 @@ const Payments = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch(`${API_URL}/payments`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${API_URL}/payments`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch payments");
+        throw new Error(
+          data.message ||
+            "Failed to fetch payments"
+        );
       }
 
       setPayments(data.payments || []);
     } catch (error) {
-      console.error("Payments history error:", error.message);
+      console.error(
+        "Payments history error:",
+        error.message
+      );
+
       setError(error.message);
     }
   };
@@ -119,38 +156,48 @@ const Payments = () => {
     loadData();
   }, []);
 
-  const filteredCustomers = customers.filter((customer) =>
-    customer.name
-      .toLowerCase()
-      .includes(customerSearch.toLowerCase())
+  const filteredCustomers = customers.filter(
+    (customer) =>
+      customer.name
+        .toLowerCase()
+        .includes(
+          customerSearch.toLowerCase()
+        )
   );
 
   const customerInvoices = selectedCustomer
     ? invoices.filter(
         (invoice) =>
-          invoice.customer?._id === selectedCustomer._id &&
+          invoice.customer?._id ===
+            selectedCustomer._id &&
           Number(invoice.balance) > 0
       )
     : [];
 
-  const filteredPayments = payments.filter((payment) => {
-    const customerName =
-      payment.customer?.name?.toLowerCase() || "";
+  const filteredPayments = payments.filter(
+    (payment) => {
+      const customerName =
+        payment.customer?.name?.toLowerCase() ||
+        "";
 
-    const invoiceNumber =
-      payment.invoice?.invoiceNumber?.toLowerCase() || "";
+      const invoiceNumber =
+        payment.invoice?.invoiceNumber?.toLowerCase() ||
+        "";
 
-    const paymentReference =
-      payment.reference?.toLowerCase() || "";
+      const paymentReference =
+        payment.reference?.toLowerCase() ||
+        "";
 
-    const search = historySearch.toLowerCase();
+      const search =
+        historySearch.toLowerCase();
 
-    return (
-      customerName.includes(search) ||
-      invoiceNumber.includes(search) ||
-      paymentReference.includes(search)
-    );
-  });
+      return (
+        customerName.includes(search) ||
+        invoiceNumber.includes(search) ||
+        paymentReference.includes(search)
+      );
+    }
+  );
 
   const handleCustomerSearch = (e) => {
     const value = e.target.value;
@@ -217,7 +264,9 @@ const Payments = () => {
     }
 
     if (!selectedInvoice) {
-      setError("Please select an outstanding invoice.");
+      setError(
+        "Please select an outstanding invoice."
+      );
       setSaving(false);
       return;
     }
@@ -225,12 +274,17 @@ const Payments = () => {
     const paymentAmount = Number(amount);
 
     if (!paymentAmount || paymentAmount <= 0) {
-      setError("Please enter a valid payment amount.");
+      setError(
+        "Please enter a valid payment amount."
+      );
       setSaving(false);
       return;
     }
 
-    if (paymentAmount > Number(selectedInvoice.balance)) {
+    if (
+      paymentAmount >
+      Number(selectedInvoice.balance)
+    ) {
       setError(
         "Payment amount cannot be greater than the outstanding balance."
       );
@@ -238,8 +292,13 @@ const Payments = () => {
       return;
     }
 
-    if (paymentMethod === "transfer" && !paymentChannel) {
-      setError("Please select a transfer channel.");
+    if (
+      paymentMethod === "transfer" &&
+      !paymentChannel
+    ) {
+      setError(
+        "Please select a transfer channel."
+      );
       setSaving(false);
       return;
     }
@@ -247,29 +306,36 @@ const Payments = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch(`${API_URL}/payments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          invoiceId: selectedInvoice._id,
-          amount: paymentAmount,
-          paymentMethod,
-          paymentChannel:
-            paymentMethod === "transfer"
-              ? paymentChannel
-              : undefined,
-          reference: reference.trim() || undefined,
-        }),
-      });
+      const response = await fetch(
+        `${API_URL}/payments`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            invoiceId:
+              selectedInvoice._id,
+            amount: paymentAmount,
+            paymentMethod,
+            paymentChannel:
+              paymentMethod === "transfer"
+                ? paymentChannel
+                : undefined,
+            reference:
+              reference.trim() || undefined,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Failed to record payment"
+          data.message ||
+            "Failed to record payment"
         );
       }
 
@@ -285,7 +351,8 @@ const Payments = () => {
       if (data.invoice?.balance > 0) {
         setSelectedInvoice({
           ...selectedInvoice,
-          amountPaid: data.invoice.amountPaid,
+          amountPaid:
+            data.invoice.amountPaid,
           balance: data.invoice.balance,
           status: data.invoice.status,
         });
@@ -298,7 +365,11 @@ const Payments = () => {
         resetPaymentForm();
       }
     } catch (error) {
-      console.error("Create payment error:", error.message);
+      console.error(
+        "Create payment error:",
+        error.message
+      );
+
       setError(error.message);
     } finally {
       setSaving(false);
@@ -321,6 +392,33 @@ const Payments = () => {
     setSelectedPayment(null);
   };
 
+  /*
+   * RECEIPT PAYMENT STATUS
+   *
+   * We use the invoice balance to determine
+   * whether the customer still owes money.
+   */
+  const receiptBalance = Number(
+    selectedPayment?.invoice?.balance || 0
+  );
+
+  const receiptTotalAmount = Number(
+    selectedPayment?.invoice?.totalAmount || 0
+  );
+
+  const receiptAmountPaid = Number(
+    selectedPayment?.invoice?.amountPaid || 0
+  );
+
+  const isReceiptPaidInFull =
+    receiptBalance <= 0;
+
+  const receiptStatus = isReceiptPaidInFull
+    ? "PAID IN FULL"
+    : receiptAmountPaid > 0
+    ? "PARTIAL PAYMENT"
+    : "OUTSTANDING";
+
   return (
     <div className="payments-layout">
       <Sidebar onLogout={handleLogout} />
@@ -332,8 +430,10 @@ const Payments = () => {
           <div className="payments-header">
             <div>
               <h1>Payments</h1>
+
               <p>
-                Record customer payments and manage outstanding balances.
+                Record customer payments and
+                manage outstanding balances.
               </p>
             </div>
           </div>
@@ -353,12 +453,14 @@ const Payments = () => {
 
           {/* RECORD PAYMENT CARD */}
           <div className="payment-card">
-
             <div className="payment-card-header">
               <div>
                 <h2>Record Payment</h2>
+
                 <p>
-                  Search for a customer and record their outstanding payment.
+                  Search for a customer and
+                  record their outstanding
+                  payment.
                 </p>
               </div>
             </div>
@@ -383,40 +485,52 @@ const Payments = () => {
                     id="customer-search"
                     type="text"
                     value={customerSearch}
-                    onChange={handleCustomerSearch}
+                    onChange={
+                      handleCustomerSearch
+                    }
                     placeholder="Search customer by name..."
                     autoComplete="off"
                   />
 
-                  {customerSearch && !selectedCustomer && (
-                    <div className="payment-search-results">
+                  {customerSearch &&
+                    !selectedCustomer && (
+                      <div className="payment-search-results">
+                        {filteredCustomers.length >
+                        0 ? (
+                          filteredCustomers.map(
+                            (customer) => (
+                              <button
+                                type="button"
+                                key={
+                                  customer._id
+                                }
+                                className="payment-search-result"
+                                onClick={() =>
+                                  handleCustomerSelect(
+                                    customer
+                                  )
+                                }
+                              >
+                                <strong>
+                                  {
+                                    customer.name
+                                  }
+                                </strong>
 
-                      {filteredCustomers.length > 0 ? (
-                        filteredCustomers.map((customer) => (
-                          <button
-                            type="button"
-                            key={customer._id}
-                            className="payment-search-result"
-                            onClick={() =>
-                              handleCustomerSelect(customer)
-                            }
-                          >
-                            <strong>{customer.name}</strong>
-
-                            <span>
-                              {customer.phone ||
-                                "No phone number"}
-                            </span>
-                          </button>
-                        ))
-                      ) : (
-                        <div className="payment-no-results">
-                          No customer found.
-                        </div>
-                      )}
-
-                    </div>
-                  )}
+                                <span>
+                                  {customer.phone ||
+                                    "No phone number"}
+                                </span>
+                              </button>
+                            )
+                          )
+                        ) : (
+                          <div className="payment-no-results">
+                            No customer found.
+                          </div>
+                        )}
+                      </div>
+                    )}
                 </div>
 
                 {/* SELECTED CUSTOMER */}
@@ -428,7 +542,9 @@ const Payments = () => {
                       </span>
 
                       <strong>
-                        {selectedCustomer.name}
+                        {
+                          selectedCustomer.name
+                        }
                       </strong>
                     </div>
 
@@ -446,32 +562,49 @@ const Payments = () => {
                       Outstanding Invoice
                     </label>
 
-                    {customerInvoices.length > 0 ? (
+                    {customerInvoices.length >
+                    0 ? (
                       <select
                         id="invoice-select"
-                        value={selectedInvoice?._id || ""}
-                        onChange={handleInvoiceChange}
+                        value={
+                          selectedInvoice?._id ||
+                          ""
+                        }
+                        onChange={
+                          handleInvoiceChange
+                        }
                       >
                         <option value="">
-                          Select an outstanding invoice
+                          Select an outstanding
+                          invoice
                         </option>
 
-                        {customerInvoices.map((invoice) => (
-                          <option
-                            key={invoice._id}
-                            value={invoice._id}
-                          >
-                            {invoice.invoiceNumber} — ₦
-                            {Number(
-                              invoice.balance
-                            ).toLocaleString()}
-                            {" outstanding"}
-                          </option>
-                        ))}
+                        {customerInvoices.map(
+                          (invoice) => (
+                            <option
+                              key={
+                                invoice._id
+                              }
+                              value={
+                                invoice._id
+                              }
+                            >
+                              {
+                                invoice.invoiceNumber
+                              }{" "}
+                              — ₦
+                              {Number(
+                                invoice.balance
+                              ).toLocaleString()}
+                              {" outstanding"}
+                            </option>
+                          )
+                        )}
                       </select>
                     ) : (
                       <div className="no-invoice">
-                        This customer has no outstanding balance.
+                        This customer has no
+                        outstanding balance.
                       </div>
                     )}
                   </div>
@@ -480,16 +613,19 @@ const Payments = () => {
                 {/* INVOICE SUMMARY */}
                 {selectedInvoice && (
                   <div className="invoice-summary">
-
                     <div className="summary-item">
                       <span>Invoice</span>
+
                       <strong>
-                        {selectedInvoice.invoiceNumber}
+                        {
+                          selectedInvoice.invoiceNumber
+                        }
                       </strong>
                     </div>
 
                     <div className="summary-item">
                       <span>Total Amount</span>
+
                       <strong>
                         ₦
                         {Number(
@@ -500,6 +636,7 @@ const Payments = () => {
 
                     <div className="summary-item">
                       <span>Already Paid</span>
+
                       <strong>
                         ₦
                         {Number(
@@ -510,6 +647,7 @@ const Payments = () => {
 
                     <div className="summary-item balance-item">
                       <span>Outstanding</span>
+
                       <strong>
                         ₦
                         {Number(
@@ -517,7 +655,6 @@ const Payments = () => {
                         ).toLocaleString()}
                       </strong>
                     </div>
-
                   </div>
                 )}
 
@@ -534,10 +671,14 @@ const Payments = () => {
                         type="number"
                         min="1"
                         step="1"
-                        max={selectedInvoice.balance}
+                        max={
+                          selectedInvoice.balance
+                        }
                         value={amount}
                         onChange={(e) =>
-                          setAmount(e.target.value)
+                          setAmount(
+                            e.target.value
+                          )
                         }
                         placeholder="Enter payment amount"
                         required
@@ -578,7 +719,8 @@ const Payments = () => {
                     </div>
 
                     {/* TRANSFER CHANNEL */}
-                    {paymentMethod === "transfer" && (
+                    {paymentMethod ===
+                      "transfer" && (
                       <div className="payment-form-group">
                         <label htmlFor="payment-channel">
                           Transfer Channel
@@ -586,7 +728,9 @@ const Payments = () => {
 
                         <select
                           id="payment-channel"
-                          value={paymentChannel}
+                          value={
+                            paymentChannel
+                          }
                           onChange={(e) =>
                             setPaymentChannel(
                               e.target.value
@@ -632,7 +776,9 @@ const Payments = () => {
                         type="text"
                         value={reference}
                         onChange={(e) =>
-                          setReference(e.target.value)
+                          setReference(
+                            e.target.value
+                          )
                         }
                         placeholder="Optional payment reference"
                       />
@@ -652,25 +798,25 @@ const Payments = () => {
                     </div>
                   </>
                 )}
-
               </form>
             )}
-
           </div>
 
           {/* PAYMENT HISTORY */}
           <div className="payment-history-card">
-
             <div className="payment-history-header">
               <div>
                 <h2>Payment History</h2>
+
                 <p>
-                  View all recorded customer payments.
+                  View all recorded customer
+                  payments.
                 </p>
               </div>
 
               <div className="payment-history-count">
-                {filteredPayments.length} payment
+                {filteredPayments.length}{" "}
+                payment
                 {filteredPayments.length !== 1
                   ? "s"
                   : ""}
@@ -688,7 +834,9 @@ const Payments = () => {
                 type="text"
                 value={historySearch}
                 onChange={(e) =>
-                  setHistorySearch(e.target.value)
+                  setHistorySearch(
+                    e.target.value
+                  )
                 }
                 placeholder="Search by customer, invoice number or reference..."
               />
@@ -699,12 +847,16 @@ const Payments = () => {
               <p className="payment-loading">
                 Loading payment history...
               </p>
-            ) : filteredPayments.length === 0 ? (
+            ) : filteredPayments.length ===
+              0 ? (
               <div className="empty-payment-history">
-                <h3>No payment records found</h3>
+                <h3>
+                  No payment records found
+                </h3>
 
                 <p>
-                  Recorded payments will appear here.
+                  Recorded payments will appear
+                  here.
                 </p>
               </div>
             ) : (
@@ -725,75 +877,82 @@ const Payments = () => {
                   </thead>
 
                   <tbody>
-                    {filteredPayments.map((payment) => (
-                      <tr key={payment._id}>
+                    {filteredPayments.map(
+                      (payment) => (
+                        <tr key={payment._id}>
+                          <td>
+                            {formatPaymentDate(
+                              payment.createdAt
+                            )}
+                          </td>
 
-                        <td>
-                          {formatPaymentDate(
-                            payment.createdAt
-                          )}
-                        </td>
+                          <td>
+                            <strong>
+                              {payment.customer
+                                ?.name ||
+                                "Unknown"}
+                            </strong>
+                          </td>
 
-                        <td>
-                          <strong>
-                            {payment.customer?.name ||
+                          <td>
+                            {payment.invoice
+                              ?.invoiceNumber ||
+                              "—"}
+                          </td>
+
+                          <td className="payment-amount-cell">
+                            ₦
+                            {Number(
+                              payment.amount
+                            ).toLocaleString()}
+                          </td>
+
+                          <td>
+                            <span
+                              className={`payment-method-badge payment-method-${payment.paymentMethod}`}
+                            >
+                              {
+                                payment.paymentMethod
+                              }
+                            </span>
+                          </td>
+
+                          <td>
+                            {payment.paymentChannel ||
+                              "—"}
+                          </td>
+
+                          <td>
+                            {payment.reference ||
+                              "—"}
+                          </td>
+
+                          <td>
+                            {payment.receivedBy
+                              ?.name ||
                               "Unknown"}
-                          </strong>
-                        </td>
+                          </td>
 
-                        <td>
-                          {payment.invoice?.invoiceNumber ||
-                            "—"}
-                        </td>
-
-                        <td className="payment-amount-cell">
-                          ₦
-                          {Number(
-                            payment.amount
-                          ).toLocaleString()}
-                        </td>
-
-                        <td>
-                          <span
-                            className={`payment-method-badge payment-method-${payment.paymentMethod}`}
-                          >
-                            {payment.paymentMethod}
-                          </span>
-                        </td>
-
-                        <td>
-                          {payment.paymentChannel ||
-                            "—"}
-                        </td>
-
-                        <td>
-                          {payment.reference || "—"}
-                        </td>
-
-                        <td>
-                          {payment.receivedBy?.name ||
-                            "Unknown"}
-                        </td>
-
-                        <td>
-                          <button
-                            type="button"
-                            className="view-receipt-button"
-                            onClick={() =>
-                              handleViewReceipt(payment)
-                            }
-                          >
-                            View Receipt
-                          </button>
-                        </td>
-
-                      </tr>
-                    ))}
+                          <td>
+                            <button
+                              type="button"
+                              className="view-receipt-button"
+                              onClick={() =>
+                                handleViewReceipt(
+                                  payment
+                                )
+                              }
+                            >
+                              View Receipt
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    )}
                   </tbody>
                 </table>
               </div>
             )}
-
           </div>
 
           {/* RECEIPT MODAL */}
@@ -804,12 +963,17 @@ const Payments = () => {
             >
               <div
                 className="receipt-modal"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) =>
+                  e.stopPropagation()
+                }
               >
-
+                {/* RECEIPT HEADER */}
                 <div className="receipt-header">
                   <div>
-                    <h2>Payment Receipt</h2>
+                    <h2>
+                      Payment Receipt
+                    </h2>
+
                     <p>
                       Inventory Manager
                     </p>
@@ -824,21 +988,27 @@ const Payments = () => {
                   </button>
                 </div>
 
+                {/* RECEIPT BODY */}
                 <div className="receipt-body">
-
                   <div className="receipt-title">
-                    <h3>PAYMENT RECEIPT</h3>
+                    <h3>
+                      PAYMENT RECEIPT
+                    </h3>
+
                     <span>
+                      Receipt ID:{" "}
                       {selectedPayment._id}
                     </span>
                   </div>
 
                   <div className="receipt-divider"></div>
 
+                  {/* BASIC DETAILS */}
                   <div className="receipt-details">
 
                     <div className="receipt-detail-row">
                       <span>Date</span>
+
                       <strong>
                         {formatPaymentDate(
                           selectedPayment.createdAt
@@ -848,58 +1018,124 @@ const Payments = () => {
 
                     <div className="receipt-detail-row">
                       <span>Customer</span>
+
                       <strong>
-                        {selectedPayment.customer?.name ||
+                        {selectedPayment
+                          .customer?.name ||
                           "Unknown"}
                       </strong>
                     </div>
 
                     <div className="receipt-detail-row">
                       <span>Invoice</span>
-                      <strong>
-                        {selectedPayment.invoice
-                          ?.invoiceNumber || "—"}
-                      </strong>
-                    </div>
 
-                    <div className="receipt-detail-row">
-                      <span>Payment Method</span>
                       <strong>
-                        {selectedPayment.paymentMethod}
-                      </strong>
-                    </div>
-
-                    {selectedPayment.paymentChannel && (
-                      <div className="receipt-detail-row">
-                        <span>Transfer Channel</span>
-                        <strong>
-                          {selectedPayment.paymentChannel}
-                        </strong>
-                      </div>
-                    )}
-
-                    <div className="receipt-detail-row">
-                      <span>Reference</span>
-                      <strong>
-                        {selectedPayment.reference ||
+                        {selectedPayment
+                          .invoice
+                          ?.invoiceNumber ||
                           "—"}
                       </strong>
                     </div>
 
                     <div className="receipt-detail-row">
-                      <span>Received By</span>
+                      <span>Payment Method</span>
+
+                      <strong className="receipt-capitalize">
+                        {
+                          selectedPayment.paymentMethod
+                        }
+                      </strong>
+                    </div>
+
+                    {selectedPayment.paymentChannel && (
+                      <div className="receipt-detail-row">
+                        <span>
+                          Transfer Channel
+                        </span>
+
+                        <strong className="receipt-capitalize">
+                          {
+                            selectedPayment.paymentChannel
+                          }
+                        </strong>
+                      </div>
+                    )}
+
+                    <div className="receipt-detail-row">
+                      <span>
+                        Reference
+                      </span>
+
                       <strong>
-                        {selectedPayment.receivedBy?.name ||
+                        {selectedPayment
+                          .reference ||
+                          "—"}
+                      </strong>
+                    </div>
+
+                    {/* PAYMENT CREATOR */}
+                    <div className="receipt-detail-row receipt-user-row">
+                      <span>
+                        Payment Recorded By
+                      </span>
+
+                      <strong>
+                        {selectedPayment
+                          .receivedBy?.name ||
                           "Unknown"}
+                      </strong>
+                    </div>
+
+                    {/* INVOICE CREATOR */}
+                    <div className="receipt-detail-row receipt-user-row">
+                      <span>
+                        Invoice Created By
+                      </span>
+
+                      <strong>
+                        {selectedPayment
+                          .invoice
+                          ?.createdBy?.name ||
+                          "Unknown"}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className="receipt-divider"></div>
+
+                  {/* INVOICE PAYMENT SUMMARY */}
+                  <div className="receipt-payment-summary">
+
+                    <div className="receipt-detail-row">
+                      <span>
+                        Invoice Total
+                      </span>
+
+                      <strong>
+                        ₦
+                        {receiptTotalAmount.toLocaleString()}
+                      </strong>
+                    </div>
+
+                    <div className="receipt-detail-row">
+                      <span>
+                        Total Paid
+                      </span>
+
+                      <strong>
+                        ₦
+                        {receiptAmountPaid.toLocaleString()}
                       </strong>
                     </div>
 
                   </div>
 
-                  <div className="receipt-divider"></div>
-
+                  {/* AMOUNT PAID */}
                   <div className="receipt-amount">
-                    <span>Amount Paid</span>
+                    <span>
+                      Amount Paid This Time
+                    </span>
+
                     <strong>
                       ₦
                       {Number(
@@ -908,24 +1144,61 @@ const Payments = () => {
                     </strong>
                   </div>
 
+                  {/* PAYMENT STATUS */}
+                  <div
+                    className={`receipt-payment-status ${
+                      isReceiptPaidInFull
+                        ? "receipt-status-paid"
+                        : "receipt-status-outstanding"
+                    }`}
+                  >
+                    <span>
+                      Payment Status
+                    </span>
+
+                    <strong>
+                      {receiptStatus}
+                    </strong>
+                  </div>
+
+                  {/* ONLY SHOW OUTSTANDING WHEN BALANCE EXISTS */}
+                  {!isReceiptPaidInFull && (
+                    <div className="receipt-outstanding">
+                      <span>
+                        Outstanding Balance
+                      </span>
+
+                      <strong>
+                        ₦
+                        {receiptBalance.toLocaleString()}
+                      </strong>
+                    </div>
+                  )}
+
+                  {/* FOOTER */}
                   <div className="receipt-footer">
                     <p>
-                      Thank you for your payment.
+                      {isReceiptPaidInFull
+                        ? "Thank you. This invoice has been fully paid."
+                        : "Thank you for your payment."}
                     </p>
 
                     <small>
-                      This receipt confirms payment against the
-                      referenced invoice.
+                      {isReceiptPaidInFull
+                        ? "No outstanding balance remains on this invoice."
+                        : "The amount shown above remains outstanding on this invoice."}
                     </small>
                   </div>
-
                 </div>
 
+                {/* ACTIONS */}
                 <div className="receipt-actions">
                   <button
                     type="button"
                     className="receipt-print-button"
-                    onClick={() => window.print()}
+                    onClick={() =>
+                      window.print()
+                    }
                   >
                     Print Receipt
                   </button>
@@ -938,11 +1211,9 @@ const Payments = () => {
                     Close
                   </button>
                 </div>
-
               </div>
             </div>
           )}
-
         </div>
       </main>
     </div>

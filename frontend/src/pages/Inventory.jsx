@@ -13,7 +13,6 @@ const Inventory = () => {
   const [showModal, setShowModal] = useState(false);
   const [movementType, setMovementType] = useState("in");
 
-  // Search text is kept separately from the form data
   const [productSearch, setProductSearch] = useState("");
 
   const [formData, setFormData] = useState({
@@ -25,12 +24,33 @@ const Inventory = () => {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState("");
 
+  // Check logged-in user's role
+  const [userRole, setUserRole] = useState("");
+
+  const isAdmin = userRole === "admin";
+
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
     window.location.href = "/login";
   };
 
-  // Fetch stock movements
+  // Get logged-in user's role
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem("user");
+
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        setUserRole(user.role || "");
+      }
+    } catch (error) {
+      console.error("Failed to read user information:", error);
+      setUserRole("");
+    }
+  }, []);
+
   const fetchMovements = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -57,7 +77,6 @@ const Inventory = () => {
     }
   };
 
-  // Fetch products
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -84,7 +103,6 @@ const Inventory = () => {
     }
   };
 
-  // Load inventory and products when page opens
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -101,7 +119,6 @@ const Inventory = () => {
     loadData();
   }, []);
 
-  // Handle quantity and reason inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -111,7 +128,6 @@ const Inventory = () => {
     }));
   };
 
-  // Reset form
   const resetForm = () => {
     setFormData({
       productId: "",
@@ -122,7 +138,6 @@ const Inventory = () => {
     setProductSearch("");
   };
 
-  // Close modal
   const closeModal = () => {
     if (saving) {
       return;
@@ -134,8 +149,13 @@ const Inventory = () => {
     resetForm();
   };
 
-  // Open Stock In or Stock Out modal
   const openMovementModal = (type) => {
+    // Extra frontend protection
+    if (!isAdmin) {
+      setError("Only administrators can manage stock.");
+      return;
+    }
+
     setMovementType(type);
     setError("");
     setSuccess("");
@@ -143,18 +163,15 @@ const Inventory = () => {
     setShowModal(true);
   };
 
-  // Select product from search results
   const selectProduct = (product) => {
     setFormData((previous) => ({
       ...previous,
       productId: product._id,
     }));
 
-    // Clear search after selecting a product
     setProductSearch("");
   };
 
-  // Change selected product
   const changeProduct = () => {
     setFormData((previous) => ({
       ...previous,
@@ -164,12 +181,10 @@ const Inventory = () => {
     setProductSearch("");
   };
 
-  // Find selected product
   const selectedProduct = products.find(
     (product) => product._id === formData.productId
   );
 
-  // Filter products based on what the user types
   const searchResults = products
     .filter((product) => {
       const search = productSearch.trim().toLowerCase();
@@ -178,22 +193,21 @@ const Inventory = () => {
         return false;
       }
 
-      const productName =
-        product.name?.toLowerCase() || "";
-
-      const productCategory =
-        product.category?.toLowerCase() || "";
-
       return (
-        productName.includes(search) ||
-        productCategory.includes(search)
+        product.name.toLowerCase().includes(search) ||
+        product.category?.toLowerCase().includes(search)
       );
     })
     .slice(0, 10);
 
-  // Submit Stock In / Stock Out
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Extra frontend protection
+    if (!isAdmin) {
+      setError("Only administrators can manage stock.");
+      return;
+    }
 
     if (!formData.productId) {
       setError("Please select a product.");
@@ -277,15 +291,11 @@ const Inventory = () => {
 
   return (
     <div className="inventory-layout">
-
       <Sidebar onLogout={handleLogout} />
 
       <main className="inventory-content">
 
-        {/* HEADER */}
-
         <div className="inventory-header">
-
           <div>
             <h1>Inventory</h1>
 
@@ -294,29 +304,29 @@ const Inventory = () => {
             </p>
           </div>
 
-          <div className="inventory-actions">
+          {/* ADMIN ONLY */}
+          {isAdmin && (
+            <div className="inventory-actions">
 
-            <button
-              type="button"
-              className="stock-in-button"
-              onClick={() => openMovementModal("in")}
-            >
-              + Stock In
-            </button>
+              <button
+                type="button"
+                className="stock-in-button"
+                onClick={() => openMovementModal("in")}
+              >
+                + Stock In
+              </button>
 
-            <button
-              type="button"
-              className="stock-out-button"
-              onClick={() => openMovementModal("out")}
-            >
-              − Stock Out
-            </button>
+              <button
+                type="button"
+                className="stock-out-button"
+                onClick={() => openMovementModal("out")}
+              >
+                − Stock Out
+              </button>
 
-          </div>
-
+            </div>
+          )}
         </div>
-
-        {/* PAGE ERROR */}
 
         {error && !showModal && (
           <div className="inventory-alert inventory-alert-error">
@@ -324,12 +334,9 @@ const Inventory = () => {
           </div>
         )}
 
-        {/* INVENTORY CARD */}
-
         <div className="inventory-card">
 
           <div className="inventory-card-header">
-
             <div>
               <h2>Stock Movements</h2>
 
@@ -342,7 +349,6 @@ const Inventory = () => {
               {movements.length} movement
               {movements.length !== 1 ? "s" : ""}
             </span>
-
           </div>
 
           {loading ? (
@@ -371,9 +377,7 @@ const Inventory = () => {
                 </thead>
 
                 <tbody>
-
                   {movements.map((movement) => (
-
                     <tr key={movement._id}>
 
                       <td>
@@ -388,7 +392,6 @@ const Inventory = () => {
                       </td>
 
                       <td>
-
                         <span
                           className={
                             movement.type === "in"
@@ -400,7 +403,6 @@ const Inventory = () => {
                         >
                           {movement.type}
                         </span>
-
                       </td>
 
                       <td>
@@ -423,9 +425,7 @@ const Inventory = () => {
                       </td>
 
                     </tr>
-
                   ))}
-
                 </tbody>
 
               </table>
@@ -434,13 +434,10 @@ const Inventory = () => {
           )}
 
         </div>
-
       </main>
 
-      {/* MODAL */}
-
-      {showModal && (
-
+      {/* STOCK MODAL - ADMIN ONLY */}
+      {showModal && isAdmin && (
         <div
           className="inventory-modal-overlay"
           onClick={closeModal}
@@ -451,12 +448,9 @@ const Inventory = () => {
             onClick={(e) => e.stopPropagation()}
           >
 
-            {/* MODAL HEADER */}
-
             <div className="inventory-modal-header">
 
               <div>
-
                 <h2>
                   {movementType === "in"
                     ? "Stock In"
@@ -468,7 +462,6 @@ const Inventory = () => {
                     ? "Add stock to a product."
                     : "Remove stock from a product."}
                 </p>
-
               </div>
 
               <button
@@ -482,15 +475,11 @@ const Inventory = () => {
 
             </div>
 
-            {/* SUCCESS MESSAGE */}
-
             {success && (
               <div className="inventory-alert inventory-alert-success">
                 {success}
               </div>
             )}
-
-            {/* ERROR MESSAGE */}
 
             {error && (
               <div className="inventory-alert inventory-alert-error">
@@ -498,14 +487,10 @@ const Inventory = () => {
               </div>
             )}
 
-            {/* FORM */}
-
             <form
               className="inventory-form"
               onSubmit={handleSubmit}
             >
-
-              {/* PRODUCT SEARCH */}
 
               <div className="inventory-form-group">
 
@@ -514,7 +499,6 @@ const Inventory = () => {
                 </label>
 
                 {!selectedProduct ? (
-
                   <div className="product-search-container">
 
                     <div className="product-search-input-wrapper">
@@ -536,22 +520,15 @@ const Inventory = () => {
 
                     </div>
 
-                    {/* SEARCH RESULTS */}
-
                     {productSearch.trim() && (
-
                       <div className="product-search-results">
 
                         {searchResults.length === 0 ? (
-
                           <div className="no-search-results">
                             No matching products found.
                           </div>
-
                         ) : (
-
                           searchResults.map((product) => (
-
                             <button
                               type="button"
                               key={product._id}
@@ -587,21 +564,14 @@ const Inventory = () => {
                               </div>
 
                             </button>
-
                           ))
-
                         )}
 
                       </div>
-
                     )}
 
                   </div>
-
                 ) : (
-
-                  /* SELECTED PRODUCT */
-
                   <div className="selected-product">
 
                     <div className="selected-product-info">
@@ -611,7 +581,6 @@ const Inventory = () => {
                       </div>
 
                       <div>
-
                         <strong>
                           {selectedProduct.name}
                         </strong>
@@ -621,7 +590,6 @@ const Inventory = () => {
                           {selectedProduct.stockQuantity}{" "}
                           {selectedProduct.unit}
                         </span>
-
                       </div>
 
                     </div>
@@ -636,12 +604,9 @@ const Inventory = () => {
                     </button>
 
                   </div>
-
                 )}
 
               </div>
-
-              {/* QUANTITY */}
 
               <div className="inventory-form-group">
 
@@ -661,8 +626,6 @@ const Inventory = () => {
                 />
 
               </div>
-
-              {/* REASON */}
 
               <div className="inventory-form-group">
 
@@ -685,8 +648,6 @@ const Inventory = () => {
                 ></textarea>
 
               </div>
-
-              {/* BUTTONS */}
 
               <div className="inventory-modal-actions">
 
@@ -722,7 +683,6 @@ const Inventory = () => {
           </div>
 
         </div>
-
       )}
 
     </div>

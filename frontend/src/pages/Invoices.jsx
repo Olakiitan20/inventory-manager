@@ -150,8 +150,384 @@ const Invoices = () => {
     setSelectedInvoice(null);
   };
 
+  /**
+   * PRINT INVOICE
+   * ----------------------------------------------------
+   * Uses a hidden iframe instead of window.open(). Popup
+   * blockers (common on managed / enterprise Chrome profiles)
+   * were silently blocking the new window, which caused the
+   * browser to fall back to printing the actual dashboard
+   * page behind the modal — resulting in a blank first page.
+   * An iframe never triggers popup blocking because no new
+   * window or tab is created.
+   */
   const handlePrintInvoice = () => {
-    window.print();
+    if (!selectedInvoice) {
+      return;
+    }
+
+    const invoiceElement = document.querySelector(".invoice-details-body");
+
+    if (!invoiceElement) {
+      alert("Unable to find the invoice details to print.");
+      return;
+    }
+
+    const invoiceHtml = invoiceElement.outerHTML;
+
+    // Remove any leftover print iframe from a previous print
+    const existingFrame = document.getElementById("invoice-print-frame");
+    if (existingFrame) {
+      existingFrame.remove();
+    }
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "invoice-print-frame";
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.setAttribute("aria-hidden", "true");
+
+    document.body.appendChild(iframe);
+
+    const frameDoc =
+      iframe.contentDocument || iframe.contentWindow.document;
+
+    frameDoc.open();
+
+    frameDoc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Invoice ${selectedInvoice.invoiceNumber || ""}</title>
+
+          <style>
+            @page {
+              size: A4;
+              margin: 12mm;
+            }
+
+            * {
+              box-sizing: border-box;
+            }
+
+            html,
+            body {
+              margin: 0;
+              padding: 0;
+              background: #ffffff;
+              color: #111827;
+              font-family: Arial, Helvetica, sans-serif;
+            }
+
+            body {
+              font-size: 12px;
+            }
+
+            .invoice-details-body {
+              width: 100%;
+              max-width: 794px;
+              margin: 0 auto;
+              padding: 0;
+              background: #ffffff;
+            }
+
+            .invoice-business-heading {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              gap: 30px;
+              padding-bottom: 18px;
+              border-bottom: 2px solid #111827;
+            }
+
+            .invoice-business-heading h1 {
+              margin: 0;
+              font-size: 25px;
+              color: #111827;
+            }
+
+            .invoice-business-heading p {
+              margin: 5px 0 0;
+              color: #6b7280;
+              font-size: 11px;
+            }
+
+            .invoice-details-number {
+              display: flex;
+              flex-direction: column;
+              align-items: flex-end;
+              gap: 4px;
+            }
+
+            .invoice-details-number span {
+              color: #6b7280;
+              font-size: 10px;
+              text-transform: uppercase;
+            }
+
+            .invoice-details-number strong {
+              font-size: 18px;
+              color: #111827;
+            }
+
+            .invoice-details-info-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 15px;
+              margin: 20px 0;
+            }
+
+            .invoice-details-info-box {
+              border: 1px solid #e5e7eb;
+              border-radius: 7px;
+              padding: 13px;
+            }
+
+            .invoice-details-info-box > span {
+              display: block;
+              margin-bottom: 6px;
+              color: #6b7280;
+              font-size: 10px;
+              font-weight: 600;
+              text-transform: uppercase;
+            }
+
+            .invoice-details-info-box strong {
+              display: block;
+              color: #111827;
+              font-size: 13px;
+              margin-bottom: 4px;
+            }
+
+            .invoice-details-info-box small {
+              display: block;
+              color: #6b7280;
+              font-size: 10px;
+              margin-top: 3px;
+            }
+
+            .invoice-details-section {
+              margin-top: 20px;
+            }
+
+            .invoice-details-section h3 {
+              margin: 0 0 10px;
+              color: #111827;
+              font-size: 14px;
+            }
+
+            .invoice-details-items-wrapper {
+              width: 100%;
+            }
+
+            .invoice-details-items-table {
+              width: 100%;
+              border-collapse: collapse;
+              table-layout: fixed;
+            }
+
+            .invoice-details-items-table th {
+              padding: 9px 7px;
+              background: #f3f4f6;
+              color: #374151;
+              border-bottom: 1px solid #d1d5db;
+              font-size: 10px;
+              text-align: left;
+            }
+
+            .invoice-details-items-table td {
+              padding: 10px 7px;
+              border-bottom: 1px solid #e5e7eb;
+              color: #111827;
+              font-size: 11px;
+              vertical-align: top;
+            }
+
+            .invoice-details-items-table th:first-child,
+            .invoice-details-items-table td:first-child {
+              width: 35px;
+            }
+
+            .invoice-details-items-table th:nth-child(3),
+            .invoice-details-items-table td:nth-child(3) {
+              width: 55px;
+              text-align: center;
+            }
+
+            .invoice-details-items-table th:nth-child(4),
+            .invoice-details-items-table td:nth-child(4),
+            .invoice-details-items-table th:nth-child(5),
+            .invoice-details-items-table td:nth-child(5) {
+              width: 110px;
+              text-align: right;
+            }
+
+            .invoice-details-items-table td strong {
+              display: block;
+              font-size: 11px;
+            }
+
+            .invoice-details-items-table td small {
+              display: block;
+              margin-top: 2px;
+              color: #6b7280;
+              font-size: 9px;
+            }
+
+            .invoice-details-bottom {
+              display: grid;
+              grid-template-columns: 1fr 280px;
+              gap: 25px;
+              margin-top: 22px;
+              padding-top: 18px;
+              border-top: 1px solid #e5e7eb;
+            }
+
+            .invoice-payment-summary,
+            .invoice-total-summary {
+              min-width: 0;
+            }
+
+            .invoice-payment-summary h3 {
+              margin: 0 0 10px;
+              color: #111827;
+              font-size: 13px;
+            }
+
+            .invoice-detail-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              gap: 20px;
+              padding: 6px 0;
+            }
+
+            .invoice-detail-row span {
+              color: #6b7280;
+              font-size: 10px;
+            }
+
+            .invoice-detail-row strong {
+              color: #374151;
+              font-size: 10px;
+              text-align: right;
+              text-transform: capitalize;
+            }
+
+            .invoice-details-status {
+              padding: 4px 8px;
+              border-radius: 12px;
+              background: #f3f4f6;
+            }
+
+            .invoice-detail-balance {
+              margin-top: 6px;
+              padding-top: 9px;
+              border-top: 1px dashed #d1d5db;
+            }
+
+            .invoice-detail-balance span {
+              color: #111827;
+              font-weight: 600;
+            }
+
+            .invoice-detail-balance strong {
+              color: #dc2626;
+              font-size: 14px;
+            }
+
+            .invoice-details-empty {
+              padding: 15px;
+              border: 1px dashed #d1d5db;
+              color: #6b7280;
+              text-align: center;
+            }
+
+            @media print {
+              html,
+              body {
+                width: 100%;
+                background: #ffffff !important;
+              }
+
+              .invoice-details-body {
+                width: 100%;
+                max-width: none;
+              }
+
+              .invoice-details-section,
+              .invoice-details-bottom,
+              .invoice-details-info-grid,
+              .invoice-details-items-wrapper {
+                break-inside: avoid;
+                page-break-inside: avoid;
+              }
+
+              .invoice-details-items-table tr {
+                break-inside: avoid;
+                page-break-inside: avoid;
+              }
+
+              .invoice-details-items-table thead {
+                display: table-header-group;
+              }
+
+              body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+              }
+            }
+          </style>
+        </head>
+
+        <body>
+          ${invoiceHtml}
+        </body>
+      </html>
+    `);
+
+    frameDoc.close();
+
+    const triggerPrint = () => {
+      try {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      } catch (err) {
+        console.error("Print error:", err);
+        alert("Unable to print the invoice. Please try again.");
+      }
+    };
+
+    // Give the iframe a brief moment to fully render before printing
+    if (iframe.contentWindow.document.readyState === "complete") {
+      setTimeout(triggerPrint, 250);
+    } else {
+      iframe.onload = () => {
+        setTimeout(triggerPrint, 250);
+      };
+    }
+
+    // Clean up the iframe from the DOM after the print dialog closes
+    const handleAfterPrint = () => {
+      iframe.contentWindow.removeEventListener(
+        "afterprint",
+        handleAfterPrint
+      );
+
+      setTimeout(() => {
+        if (iframe.parentNode) {
+          iframe.parentNode.removeChild(iframe);
+        }
+      }, 500);
+    };
+
+    iframe.contentWindow.addEventListener("afterprint", handleAfterPrint);
   };
 
   const customerResults = customers
@@ -1038,6 +1414,20 @@ const Invoices = () => {
                     {selectedInvoice.customer?.customerType ||
                       "Customer"}
                   </small>
+                </div>
+
+                <div className="invoice-details-info-box">
+                  <span>Created By</span>
+
+                  <strong>
+                    {selectedInvoice.createdBy?.name || "—"}
+                  </strong>
+
+                  {selectedInvoice.createdBy?.email && (
+                    <small>
+                      {selectedInvoice.createdBy.email}
+                    </small>
+                  )}
                 </div>
               </div>
 
